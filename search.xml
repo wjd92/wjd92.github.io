@@ -28,7 +28,7 @@ class="math inline">\(X^{&#39;}\)</span></li>
 <li>在子样本集<span
 class="math inline">\(X^{&#39;}\)</span>上构建一棵孤立树(iTree)，过程如下图所示：</li>
 </ol>
-<p><img src="https://images.bumpchicken.cn/img/20220508001729.png" width="80%" height="50%"></p>
+<p><img src="https://images.bumpchicken.cn/img/20220508001729.png" width="80%" height="20%"></p>
 <ol type="a">
 <li><p>在<span
 class="math inline">\(X\)</span>中随机选择一个属性（维度），在当前样本数据范围内，随机产生一个分割点<span
@@ -66,7 +66,7 @@ class="math inline">\(\gamma\)</span>为欧拉常数，约等于0.5772156649</p>
 </ol>
 <p>异常得分<span class="math inline">\(s\)</span>和<span
 class="math inline">\(E(h(x))\)</span>关系图如下所示</p>
-<p><img src="http://images.bumpchicken.cn/img/20220508010609.png" width="50%" height="30%"></p>
+<p><img src="https://images.bumpchicken.cn/img/20220508010609.png" width="50%" height="30%"></p>
 <p>异常得分的等高线图如下所示，通常潜在的异常点<span
 class="math inline">\(s&gt;=0.6\)</span>
 <img src="http://images.bumpchicken.cn/img/20220508010909.png" width="50%" height="30%"></p>
