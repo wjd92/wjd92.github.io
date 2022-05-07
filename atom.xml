@@ -6,7 +6,7 @@
   <link href="http://www.bumpchicken.cn/atom.xml" rel="self"/>
   
   <link href="http://www.bumpchicken.cn/"/>
-  <updated>2022-04-26T09:56:27.355Z</updated>
+  <updated>2022-05-07T16:12:21.300Z</updated>
   <id>http://www.bumpchicken.cn/</id>
   
   <author>
@@ -21,9 +21,9 @@
     <link href="http://www.bumpchicken.cn/2020/05/25/IsolationTree/"/>
     <id>http://www.bumpchicken.cn/2020/05/25/IsolationTree/</id>
     <published>2020-05-25T03:33:00.000Z</published>
-    <updated>2022-04-26T09:56:27.355Z</updated>
+    <updated>2022-05-07T16:12:21.300Z</updated>
     
-    <content type="html"><![CDATA[<p><img src="https://images.bumpchicken.cn/img/tree.png" /></p><p>孤立森林（IsolationForest）是周志华团队于2008年提出的一种具有线性复杂度的异常检测算法，被工业界广泛应用于诸如异常流量检测,金融欺诈行为检测等场景。</p><span id="more"></span><h2 id="算法原理">算法原理</h2><p>异常检测领域，通常是正常的样本占大多数，离群点占绝少数，因此大多数异常检测算法的基本思想都是对正常点构建模型，然后根据规则识别出不属于正常点模型的离群点，比较典型的算法有OneClass SVM(OCSVM), Local OutlierFactor(LOF)。和多数异常检测算法不同，孤立森林采用了一种较为高效的异常发现算法，其思路很朴素，但也足够直观有效。</p><p>考虑以下场景，一个二维平面上零零散散分布着一些点，随机使用分割线对其进行分割，直至所有但点都不可再划分（即被孤立了）。直观上来讲，可以发现那些密度很高的簇需要被切割很多次才会停止切割，但是密度很低的点很快就会停止切割到某个子空间了。</p><p><imgsrc="https://images.bumpchicken.cn/img/20220424235501.png" /></p><p>图1 孤立森林原理示意图</p><h2 id="训练">训练</h2><h3 id="构建itree">构建iTree</h3><h3 id="构建iforest">构建IForest</h3><h2 id="评估">评估</h2><h2 id="参考资料">参考资料</h2><p>1.Liu F T, Ting K M, Zhou Z H. Isolation forest[C]//2008 Eighth IEEEInternational Conference on Data Mining. IEEE, 2008: 413-422.</p>]]></content>
+    <content type="html"><![CDATA[<p><img src="https://images.bumpchicken.cn/img/tree.png" /></p><p>孤立森林（IsolationForest）是周志华团队于2008年提出的一种具有线性复杂度的异常检测算法，被工业界广泛应用于诸如异常流量检测,金融欺诈行为检测等场景。</p><span id="more"></span><h2 id="算法原理">算法原理</h2><p>异常检测领域，通常是正常的样本占大多数，离群点占绝少数，因此大多数异常检测算法的基本思想都是对正常点构建模型，然后根据规则识别出不属于正常点模型的离群点，比较典型的算法有OneClass SVM(OCSVM), Local OutlierFactor(LOF)。和多数异常检测算法不同，孤立森林采用了一种较为高效的异常发现算法，其思路很朴素，但也足够直观有效。</p><p>考虑以下场景，一个二维平面上零零散散分布着一些点，随机使用分割线对其进行分割，直至所有但点都不可再划分（即被孤立了）。直观上来讲，可以发现那些密度很高的簇需要被切割很多次才会停止切割，但是密度很低的点很快就会停止切割到某个子空间了。</p><p><imgsrc="https://images.bumpchicken.cn/img/20220424235501.png" /></p><p>图1 孤立森林原理示意图</p><p>孤立森林分训练和异常得分评估两部分:</p><ul><li><b>训练:</b> 根据样本抽样构建多棵itree，形成孤立森林</li><li><b>异常评估:</b>根据训练过程构建的孤立森林，计算待评估值的异常得分</li></ul><h2 id="训练">训练</h2><ol type="1"><li>给定训练数据集X，确定需要构建的孤立树（iTree）个数t，按<spanclass="math inline">\(\phi\)</span>采样大小随机取样作为子样本集<spanclass="math inline">\(X^{&#39;}\)</span></li></ol><h3 id="构建itree">构建iTree</h3><h3 id="构建iforest">构建IForest</h3><h2 id="异常评估">异常评估</h2><h2 id="参考资料">参考资料</h2><p>1.Liu F T, Ting K M, Zhou Z H. Isolation forest[C]//2008 Eighth IEEEInternational Conference on Data Mining. IEEE, 2008: 413-422.</p>]]></content>
     
     
     <summary type="html">&lt;p&gt;&lt;img src=&quot;https://images.bumpchicken.cn/img/tree.png&quot; /&gt;&lt;/p&gt;
