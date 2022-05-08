@@ -43,7 +43,7 @@ class="math inline">\(p\)</span>(介于当前维度最大和最小值之间)</p>
 <p><img src="https://images.bumpchicken.cn/img/20220508003153.png" width="80%" height="30%"></p>
 <h2 id="异常评估">异常评估</h2>
 <p>构建了孤立森林(IForest)后，可以评估某个点<span
-class="math inline">\(x\)</span>的异常得分，用到如下公示</p>
+class="math inline">\(x\)</span>的异常得分，用到如下公式:</p>
 <p><span class="math display">\[s(x,n)=2^{-\frac{E(h(x))}{c(n}}
 \]</span></p>
 <p>其中，<span class="math inline">\(h(x)\)</span> 表示<span
@@ -62,7 +62,7 @@ class="math inline">\(\gamma\)</span>为欧拉常数，约等于0.5772156649</p>
 <ol type="1">
 <li><p>如果异常得分接近1，那么一定是异常点</p></li>
 <li><p>如果异常得分远小于0.5, 那么一定不是异常点</p></li>
-<li><p>如果样本点点异常得分均在0.5左右，那么样本中可能不存在异常点</p></li>
+<li><p>如果样本点的异常得分均在0.5左右，那么样本中可能不存在异常点</p></li>
 </ol>
 <p>异常得分<span class="math inline">\(s\)</span>和<span
 class="math inline">\(E(h(x))\)</span>关系图如下所示</p>
