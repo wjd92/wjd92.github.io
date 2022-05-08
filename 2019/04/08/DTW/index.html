@@ -30,7 +30,7 @@
 <meta property="og:image" content="https://images.bumpchicken.cn/img/20220509012950.png">
 <meta property="og:image" content="https://images.bumpchicken.cn/img/20220509015951.png">
 <meta property="article:published_time" content="2019-04-08T11:51:00.000Z">
-<meta property="article:modified_time" content="2022-05-08T18:07:53.062Z">
+<meta property="article:modified_time" content="2022-05-08T18:08:48.379Z">
 <meta property="article:author" content="wjd">
 <meta property="article:tag" content="时间序列分析">
 <meta name="twitter:card" content="summary">
@@ -228,7 +228,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-09 02:07:53" itemprop="dateModified" datetime="2022-05-09T02:07:53+08:00">2022-05-09</time>
+                <time title="修改时间：2022-05-09 02:08:48" itemprop="dateModified" datetime="2022-05-09T02:08:48+08:00">2022-05-09</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -308,9 +308,9 @@ class="math inline">\(j\)</span>的两个时间序列之间的归整路径距离
 class="math display">\[D(i,j)=Dist(i,j)+min[D(i-1,j),D(i,j-1),D(i-1,j-1)]\]</span></p>
 <p><img src="https://images.bumpchicken.cn/img/20220509015951.png" width="80%" height="30%"></p>
 <p>代码如下: <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">distance</span>(<span class="params">x,y</span>):</span><br><span class="line">   <span class="string">&quot;&quot;&quot;定义你的距离函数，欧式距离，街区距离等等&quot;&quot;&quot;</span></span><br><span class="line">   <span class="keyword">return</span> <span class="built_in">abs</span>(x-y)</span><br><span class="line">  </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">dtw</span>(<span class="params">X,Y</span>):</span><br><span class="line">    M=[[distance(X[i],Y[j]) <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(X))] <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(Y))]</span><br><span class="line">    l1=<span class="built_in">len</span>(X)</span><br><span class="line">    l2=<span class="built_in">len</span>(Y) </span><br><span class="line">    D=[[<span class="number">0</span> <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(l1+<span class="number">1</span>)] <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(l2+<span class="number">1</span>)]</span><br><span class="line">    D[<span class="number">0</span>][<span class="number">0</span>]=<span class="number">0</span> </span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,l1+<span class="number">1</span>):</span><br><span class="line">      D[i][<span class="number">0</span>]=sys.maxint</span><br><span class="line">    <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,l2+<span class="number">1</span>):</span><br><span class="line">      D[<span class="number">0</span>][j]=sys.maxint</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,l1+<span class="number">1</span>):</span><br><span class="line">      <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,l2+<span class="number">1</span>):</span><br><span class="line">        D[i][j]=M[i-<span class="number">1</span>][j-<span class="number">1</span>]+<span class="built_in">min</span>(D[i-<span class="number">1</span>][j],D[i][j-<span class="number">1</span>],D[i-<span class="number">1</span>][j-<span class="number">1</span>])</span><br><span class="line">    <span class="keyword">return</span> D[l1][l2]</span><br></pre></td></tr></table></figure></p>
-<p>__DTW采用动态规划实现，时间复杂度为<span
+<p><strong>DTW采用动态规划实现，时间复杂度为<span
 class="math inline">\(O(N^{2})\)</span>,有一些改进的快速DTW算法，如FastDTW[1],
-SparseDTW, LB_Keogh, LB_Imporved等</p>
+SparseDTW, LB_Keogh, LB_Imporved等</strong></p>
 <h2 id="参考资料">参考资料</h2>
 <ol type="1">
 <li>FastDTW: Toward Accurate Dynamic Time Warping in Linear Time and
