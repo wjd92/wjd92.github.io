@@ -28,8 +28,10 @@
 <meta property="og:description" content="贝叶斯优化(Bayesian Optimization, BO)是一种黑盒优化算法，用于求解表达式未知的函数极值问题。算法使用高斯过程回归对一组采样点的函数值进行概率建模，预测出任意点处函数值的概率分布，然后构造采集函数(Acquistion Function)，用于衡量每一个点值得探索(explore)的程度，求解采集函数的极值从而确定下一个采样点，最后返回这组采样点的极值作为函数的极值。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://images.bumpchicken.cn/img/20220509122455.png">
+<meta property="og:image" content="https://images.bumpchicken.cn/img/20220510004441.png">
+<meta property="og:image" content="https://images.bumpchicken.cn/img/20220510004715.png">
 <meta property="article:published_time" content="2020-12-29T04:07:00.000Z">
-<meta property="article:modified_time" content="2022-05-09T07:31:57.193Z">
+<meta property="article:modified_time" content="2022-05-09T16:51:33.717Z">
 <meta property="article:author" content="wjd">
 <meta property="article:tag" content="AutoML">
 <meta name="twitter:card" content="summary">
@@ -227,7 +229,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-09 15:31:57" itemprop="dateModified" datetime="2022-05-09T15:31:57+08:00">2022-05-09</time>
+                <time title="修改时间：2022-05-10 00:51:33" itemprop="dateModified" datetime="2022-05-10T00:51:33+08:00">2022-05-10</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -359,7 +361,7 @@ class="math inline">\(k(x,x^{&#39;})\)</span>计算得到，也称为协方差�
 class="math inline">\(x^{&#39;}\)</span>之间有更大的正协方差值，因为相近的两个点的函数值有更强的相关性</li>
 <li>保证协方差矩阵是对称半正定矩阵</li>
 </ol>
-<p>常用的是高斯核核Matern核，高斯核定义为：</p>
+<p>常用的是高斯核和Matern核，高斯核定义为：</p>
 <p><span class="math display">\[k\left(\mathbf{x}_{1},
 \mathbf{x}_{2}\right)=\alpha_{0} \exp \left(-\frac{1}{2
 \sigma^{2}}\left\|\mathbf{x}_{1}-\mathbf{x}_{2}\right\|^{2}\right)\]</span></p>
@@ -380,6 +382,79 @@ k\left(\mathbf{x}_{1}, \mathbf{x}_{t}\right) \\
 k\left(\mathbf{x}_{t}, \mathbf{x}_{1}\right) &amp; \ldots &amp;
 k\left(\mathbf{x}_{t}, \mathbf{x}_{t}\right)
 \end{array}\right]\]</span></p>
+<p>在计算出均值向量和协方差矩阵之后，可以根据此多维正态分布预测<span
+class="math inline">\(f(x)\)</span>在任意点处的概率分布。假设已经得到了一组样本<span
+class="math inline">\(X_{1:t}\)</span>，以及对应的函数值<span
+class="math inline">\(f(x_{1:t})\)</span>，如果要预测新的点<span
+class="math inline">\(x\)</span>的函数值<span
+class="math inline">\(f(x)\)</span>的期望<span
+class="math inline">\(\mu(x)\)</span>和方差<span
+class="math inline">\(\sigma^{2}(x)\)</span>，令<span
+class="math inline">\(x_{t+1}=x\)</span>，加入该点后，<span
+class="math inline">\(f(x_{1:t+1})\)</span>服从<span
+class="math inline">\(t+1\)</span>维正态分布，即：</p>
+<p><span class="math display">\[\left[\begin{array}{c}
+f\left(\mathbf{x}_{1: t}\right) \\
+f\left(\mathbf{x}_{t+1}\right)
+\end{array}\right] \sim N\left(\left[\begin{array}{c}
+\mu\left(\mathbf{x}_{1: t}\right) \\
+\mu\left(\mathbf{x}_{t+1}\right)
+\end{array}\right],\left[\begin{array}{cc}
+\mathbf{K} &amp; \mathbf{k} \\
+\mathbf{k}^{\mathrm{T}} &amp; k\left(\mathbf{x}_{t+1},
+\mathbf{x}_{t+1}\right)
+\end{array}\right]\right)\]</span></p>
+<p>在已知<span class="math inline">\(f(x_{1:t})\)</span>的情况下，<span
+class="math inline">\(f(x_{t+1})\)</span>服从一维正态分布，即：</p>
+<p><span class="math display">\[f\left(\mathbf{x}_{t+1}\right) \mid
+f\left(\mathbf{x}_{1: t}\right) \sim N\left(\mu,
+\sigma^{2}\right)\]</span></p>
+<p>可以计算出对应的均值和方差，公式如下：</p>
+<p><span class="math display">\[\begin{array}{l}
+\mu=\mathbf{k}^{\mathrm{T}} \mathbf{K}^{-1}\left(f\left(\mathbf{x}_{1:
+t}\right)-\mu\left(\mathbf{x}_{1:
+t}\right)\right)+\mu\left(\mathbf{x}_{t+1}\right) \\
+\sigma^{2}=k\left(\mathbf{x}_{t+1},
+\mathbf{x}_{t+1}\right)-\mathbf{k}^{\mathrm{T}} \mathbf{K}^{-1}
+\mathbf{k}
+\end{array}\]</span></p>
+<p>计算均值利用了已有采样点处函数值<span
+class="math inline">\(f(x_{1:t})\)</span>，方差只与协方差值有关，与<span
+class="math inline">\(f(x_{1:t})\)</span>无关</p>
+<h3 id="gpr代码实现">GPR代码实现</h3>
+<ul>
+<li>定义高斯核</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">kernel</span>(<span class="params">X1, X2, l=<span class="number">1.0</span>, sigma_f=<span class="number">1.0</span></span>):</span><br><span class="line">    <span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">    X1: Array of m points (m x d).</span></span><br><span class="line"><span class="string">    X2: Array of n points (n x d).</span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        Covariance matrix (m x n).</span></span><br><span class="line"><span class="string">    &#x27;&#x27;&#x27;</span></span><br><span class="line">    sqdist = np.<span class="built_in">sum</span>(X1**<span class="number">2</span>, <span class="number">1</span>).reshape(-<span class="number">1</span>, <span class="number">1</span>) + np.<span class="built_in">sum</span>(X2**<span class="number">2</span>, <span class="number">1</span>) - <span class="number">2</span> * np.dot(X1, X2.T)</span><br><span class="line">    <span class="keyword">return</span> sigma_f**<span class="number">2</span> * np.exp(-<span class="number">0.5</span> / l**<span class="number">2</span> * sqdist)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>计算均值和协方差矩阵</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">posterior_predictive</span>(<span class="params">X_s, X_train, Y_train, l=<span class="number">1.0</span>, sigma_f=<span class="number">1.0</span>, sigma_y=<span class="number">1e-8</span></span>):</span><br><span class="line">    <span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">    根据先验数据点计算均值向量和协方差矩阵</span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        X_s: New input locations (n x d).</span></span><br><span class="line"><span class="string">        X_train: Training locations (m x d).</span></span><br><span class="line"><span class="string">        Y_train: Training targets (m x 1).</span></span><br><span class="line"><span class="string">        l: Kernel length parameter.</span></span><br><span class="line"><span class="string">        sigma_f: Kernel vertical variation parameter.</span></span><br><span class="line"><span class="string">        sigma_y: Noise parameter.</span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        Posterior mean vector (n x d) and covariance matrix (n x n).</span></span><br><span class="line"><span class="string">    &#x27;&#x27;&#x27;</span></span><br><span class="line">    K = kernel(X_train, X_train, l, sigma_f) + sigma_y**<span class="number">2</span> * np.eye(<span class="built_in">len</span>(X_train))</span><br><span class="line">    K_s = kernel(X_train, X_s, l, sigma_f)</span><br><span class="line">    K_ss = kernel(X_s, X_s, l, sigma_f) + <span class="number">1e-8</span> * np.eye(<span class="built_in">len</span>(X_s))</span><br><span class="line">    K_inv = np.linalg.inv(K)</span><br><span class="line">    mu_s = K_s.T.dot(K_inv).dot(Y_train)      <span class="comment"># 均值向量, 注意均值函数被设置为 0</span></span><br><span class="line">    cov_s = K_ss - K_s.T.dot(K_inv).dot(K_s)  <span class="comment"># 协方差矩阵</span></span><br><span class="line">    <span class="keyword">return</span> mu_s, cov_s</span><br></pre></td></tr></table></figure>
+<ul>
+<li>GPR拟合效果绘制</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">plot_gp</span>(<span class="params">mu, cov, X, X_train=<span class="literal">None</span>, Y_train=<span class="literal">None</span>, samples=[]</span>):</span><br><span class="line">    <span class="comment"># 定义gp绘图函数</span></span><br><span class="line">    X = X.ravel()</span><br><span class="line">    mu = mu.ravel()</span><br><span class="line">    uncertainty = <span class="number">1.96</span> * np.sqrt(np.diag(cov))   <span class="comment"># 1.96倍标准差对应95%置信度区间</span></span><br><span class="line"></span><br><span class="line">    plt.fill_between(X, mu + uncertainty, mu - uncertainty, alpha=<span class="number">0.1</span>)</span><br><span class="line">    plt.plot(X, mu, label=<span class="string">&#x27;Mean&#x27;</span>)</span><br><span class="line">    <span class="keyword">for</span> i, sample <span class="keyword">in</span> <span class="built_in">enumerate</span>(samples):</span><br><span class="line">      plt.plot(X, sample, lw=<span class="number">1</span>, ls=<span class="string">&#x27;--&#x27;</span>, label=<span class="string">f&#x27;Sample <span class="subst">&#123;i+<span class="number">1</span>&#125;</span>&#x27;</span>)</span><br><span class="line">      <span class="keyword">if</span> X_train <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">        plt.plot(X_train, Y_train, <span class="string">&#x27;rx&#x27;</span>)</span><br><span class="line">        plt.legend()</span><br><span class="line"></span><br><span class="line">X = np.arange(-<span class="number">5</span>, <span class="number">5</span>, <span class="number">0.2</span>).reshape(-<span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line">X_train = np.array([-<span class="number">4</span>, -<span class="number">3</span>, -<span class="number">2</span>, -<span class="number">1</span>, <span class="number">1</span>]).reshape(-<span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line">Y_train = np.sin(X_train)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 计算均值向量和协方差矩阵</span></span><br><span class="line">mu_s, cov_s = posterior_predictive(X, X_train, Y_train)</span><br><span class="line"></span><br><span class="line">samples = np.random.multivariate_normal(mu_s.ravel(), cov_s, <span class="number">1</span>)</span><br><span class="line">plot_gp(mu_s, cov_s, X, X_train=X_train, Y_train=Y_train, samples=samples)</span><br></pre></td></tr></table></figure>
+<p>结果如下图所示：</p>
+<p><img src="https://images.bumpchicken.cn/img/20220510004441.png" width="60%" height="50%"></p>
+<p>其中，红色叉代表观测值，蓝色线代表均值，浅蓝色区域代表95%置信区间。</p>
+<h2 id="贝叶斯优化原理">贝叶斯优化原理</h2>
+<h4 id="基本过程">基本过程</h4>
+<p>以下是贝叶斯优化的过程</p>
+<p><img src="https://images.bumpchicken.cn/img/20220510004715.png"></p>
+<p>有两个主要组成部分：</p>
+<ol type="1">
+<li>GPR。根据观测点构建高斯过程回归模型，该模型能求取任意点处的函数值及后验概率。</li>
+<li>构造采集函数（acquisition
+function），用于决定本次迭代在哪个点处进行采样。</li>
+</ol>
+<p>算法首先初始化<span
+class="math inline">\(n_{0}\)</span>个点，设定最大迭代次数<span
+class="math inline">\(N\)</span>，开始循环求解，每次增加一个点，寻找下一个点时根据已经找到的<span
+class="math inline">\(n\)</span>个候选解建立高斯回归模型，通过这个模型能得到任意点处的函数值的后验概率。然后根据后验概率构造采集函数，寻找采集函数的极大值点作为下一个搜索点，以此循环，直到达到最大迭代次数，返回<span
+class="math inline">\(N\)</span>个解中的极大值作为最优解。</p>
+<p>采集函数的选择有很多种，最常用的是期望改进（Expected
+Improvement，EI),下一节介绍下EI的原理。</p>
+<h4 id="采集函数">采集函数</h4>
 
     </div>
 
@@ -461,7 +536,7 @@ k\left(\mathbf{x}_{t}, \mathbf{x}_{t}\right)
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%BB%91%E7%9B%92%E4%BC%98%E5%8C%96%E9%97%AE%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">黑盒优化问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%90%86%E8%AE%BA%E5%87%86%E5%A4%87"><span class="nav-number">2.</span> <span class="nav-text">理论准备</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AB%98%E6%96%AF%E8%BF%87%E7%A8%8B"><span class="nav-number">2.1.</span> <span class="nav-text">高斯过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AB%98%E6%96%AF%E8%BF%87%E7%A8%8B%E5%9B%9E%E5%BD%92"><span class="nav-number">2.2.</span> <span class="nav-text">高斯过程回归</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%BB%91%E7%9B%92%E4%BC%98%E5%8C%96%E9%97%AE%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">黑盒优化问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%90%86%E8%AE%BA%E5%87%86%E5%A4%87"><span class="nav-number">2.</span> <span class="nav-text">理论准备</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AB%98%E6%96%AF%E8%BF%87%E7%A8%8B"><span class="nav-number">2.1.</span> <span class="nav-text">高斯过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AB%98%E6%96%AF%E8%BF%87%E7%A8%8B%E5%9B%9E%E5%BD%92"><span class="nav-number">2.2.</span> <span class="nav-text">高斯过程回归</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gpr%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.3.</span> <span class="nav-text">GPR代码实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B4%9D%E5%8F%B6%E6%96%AF%E4%BC%98%E5%8C%96%E5%8E%9F%E7%90%86"><span class="nav-number">3.</span> <span class="nav-text">贝叶斯优化原理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E8%BF%87%E7%A8%8B"><span class="nav-number">3.0.1.</span> <span class="nav-text">基本过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%87%87%E9%9B%86%E5%87%BD%E6%95%B0"><span class="nav-number">3.0.2.</span> <span class="nav-text">采集函数</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 

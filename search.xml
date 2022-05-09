@@ -1,87 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>孤立森林原理详解</title>
-    <url>/2020/05/25/IsolationTree/</url>
-    <content><![CDATA[<p><img src="https://images.bumpchicken.cn/img/tree.png" /></p>
-<p>孤立森林（Isolation
-Forest）是周志华团队于2008年提出的一种具有线性复杂度的异常检测算法，被工业界广泛应用于诸如异常流量检测,金融欺诈行为检测等场景。</p>
-<span id="more"></span>
-<h2 id="算法原理">算法原理</h2>
-<p>异常检测领域，通常是正常的样本占大多数，离群点占绝少数，因此大多数异常检测算法的基本思想都是对正常点构建模型，然后根据规则识别出不属于正常点模型的离群点，比较典型的算法有One
-Class SVM(OCSVM), Local Outlier
-Factor(LOF)。和多数异常检测算法不同，孤立森林采用了一种较为高效的异常发现算法，其思路很朴素，但也足够直观有效。</p>
-<p>考虑以下场景，一个二维平面上零零散散分布着一些点，随机使用分割线对其进行分割，直至所有但点都不可再划分（即被孤立了）。直观上来讲，可以发现那些密度很高的簇需要被切割很多次才会停止切割，但是密度很低的点很快就会停止切割到某个子空间了。</p>
-<p><img src="https://images.bumpchicken.cn/img/20220424235501.png" width="90%" height="50%"></p>
-<p>孤立森林分<b>训练</b>和<b>异常评估</b>两部分:</p>
-<ul>
-<li><b>训练:</b> 根据样本抽样构建多棵iTree，形成孤立森林</li>
-<li><b>异常评估:</b>
-根据训练过程构建的孤立森林，计算待评估值的异常得分</li>
-</ul>
-<h2 id="训练">训练</h2>
-<ol type="1">
-<li>给定训练数据集<span
-class="math inline">\(X\)</span>，确定需要构建的孤立树（iTree）个数t，按<span
-class="math inline">\(\phi\)</span>采样大小随机取样作为子样本集<span
-class="math inline">\(X^{&#39;}\)</span></li>
-<li>在子样本集<span
-class="math inline">\(X^{&#39;}\)</span>上构建一棵孤立树(iTree)，过程如下图所示：</li>
-</ol>
-<p><img src="https://images.bumpchicken.cn/img/20220508001729.png" width="80%" height="20%"></p>
-<ol type="a">
-<li><p>在<span
-class="math inline">\(X\)</span>中随机选择一个属性（维度），在当前样本数据范围内，随机产生一个分割点<span
-class="math inline">\(p\)</span>(介于当前维度最大和最小值之间)</p></li>
-<li><p>此切割点即是一个超平面，将当前节点数据空间切分成2个子空间：将当前所选维度下小于p点的放在当前节点左分支，把大于p点的放在当前节点的右分支</p></li>
-<li><p>在节点的左分支和右分支递归执行步骤a，b，不断构造新的叶子节点，直到叶子节点上只有一个数据或者树已经生长到了限制的高度</p></li>
-<li><p>单棵iTree构建完成</p></li>
-</ol>
-<ol start="3" type="1">
-<li>按2的过程，依次构建t棵iTree，得到孤立森林</li>
-</ol>
-<p><img src="https://images.bumpchicken.cn/img/20220508003153.png" width="80%" height="30%"></p>
-<h2 id="异常评估">异常评估</h2>
-<p>构建了孤立森林(IForest)后，可以评估某个点<span
-class="math inline">\(x\)</span>的异常得分，用到如下公式:</p>
-<p><span class="math display">\[s(x,n)=2^{-\frac{E(h(x))}{c(n}}
-\]</span></p>
-<p>其中，<span class="math inline">\(h(x)\)</span> 表示<span
-class="math inline">\(x\)</span>在某棵孤立树中的路径长度，<span
-class="math inline">\(E(h(x))\)</span>
-表示在所有孤立树中的期望路径长度。<span
-class="math inline">\(c(n)\)</span>
-为样本数为n时的二叉排序树(BST)的平均搜索路径长度，用来对样本<span
-class="math inline">\(x\)</span>的期望路径长度做归一化处理。<span
-class="math inline">\(c(n)\)</span>公式如下:</p>
-<p><span class="math display">\[c(n)=2H(n-1)-(2(n-1)/n)\]</span></p>
-<p>其中，<span class="math inline">\(H(i)\)</span>是一个调和数，约等于
-<span class="math inline">\(ln(i) + \gamma\)</span>，<span
-class="math inline">\(\gamma\)</span>为欧拉常数，约等于0.5772156649</p>
-<p>论文对于异常得分分布有如下结论：</p>
-<ol type="1">
-<li><p>如果异常得分接近1，那么一定是异常点</p></li>
-<li><p>如果异常得分远小于0.5, 那么一定不是异常点</p></li>
-<li><p>如果样本点的异常得分均在0.5左右，那么样本中可能不存在异常点</p></li>
-</ol>
-<p>异常得分<span class="math inline">\(s\)</span>和<span
-class="math inline">\(E(h(x))\)</span>关系图如下所示</p>
-<p><img src="https://images.bumpchicken.cn/img/20220508010609.png" width="50%" height="30%"></p>
-<p>异常得分的等高线图如下所示，通常潜在的异常点<span
-class="math inline">\(s&gt;=0.6\)</span>
-<img src="http://images.bumpchicken.cn/img/20220508010909.png" width="50%" height="30%"></p>
-<h2 id="参考资料">参考资料</h2>
-<p>1.Liu F T, Ting K M, Zhou Z H. Isolation forest[C]//2008 Eighth IEEE
-International Conference on Data Mining. IEEE, 2008: 413-422.</p>
-]]></content>
-      <categories>
-        <category>异常检测</category>
-      </categories>
-      <tags>
-        <tag>异常检测</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>贝叶斯优化原理及应用</title>
     <url>/2020/12/29/BayesianOptimization/</url>
     <content><![CDATA[<p><img src="https://images.bumpchicken.cn/img/20220509122455.png"></p>
@@ -193,7 +112,7 @@ class="math inline">\(k(x,x^{&#39;})\)</span>计算得到，也称为协方差�
 class="math inline">\(x^{&#39;}\)</span>之间有更大的正协方差值，因为相近的两个点的函数值有更强的相关性</li>
 <li>保证协方差矩阵是对称半正定矩阵</li>
 </ol>
-<p>常用的是高斯核核Matern核，高斯核定义为：</p>
+<p>常用的是高斯核和Matern核，高斯核定义为：</p>
 <p><span class="math display">\[k\left(\mathbf{x}_{1},
 \mathbf{x}_{2}\right)=\alpha_{0} \exp \left(-\frac{1}{2
 \sigma^{2}}\left\|\mathbf{x}_{1}-\mathbf{x}_{2}\right\|^{2}\right)\]</span></p>
@@ -214,12 +133,161 @@ k\left(\mathbf{x}_{1}, \mathbf{x}_{t}\right) \\
 k\left(\mathbf{x}_{t}, \mathbf{x}_{1}\right) &amp; \ldots &amp;
 k\left(\mathbf{x}_{t}, \mathbf{x}_{t}\right)
 \end{array}\right]\]</span></p>
+<p>在计算出均值向量和协方差矩阵之后，可以根据此多维正态分布预测<span
+class="math inline">\(f(x)\)</span>在任意点处的概率分布。假设已经得到了一组样本<span
+class="math inline">\(X_{1:t}\)</span>，以及对应的函数值<span
+class="math inline">\(f(x_{1:t})\)</span>，如果要预测新的点<span
+class="math inline">\(x\)</span>的函数值<span
+class="math inline">\(f(x)\)</span>的期望<span
+class="math inline">\(\mu(x)\)</span>和方差<span
+class="math inline">\(\sigma^{2}(x)\)</span>，令<span
+class="math inline">\(x_{t+1}=x\)</span>，加入该点后，<span
+class="math inline">\(f(x_{1:t+1})\)</span>服从<span
+class="math inline">\(t+1\)</span>维正态分布，即：</p>
+<p><span class="math display">\[\left[\begin{array}{c}
+f\left(\mathbf{x}_{1: t}\right) \\
+f\left(\mathbf{x}_{t+1}\right)
+\end{array}\right] \sim N\left(\left[\begin{array}{c}
+\mu\left(\mathbf{x}_{1: t}\right) \\
+\mu\left(\mathbf{x}_{t+1}\right)
+\end{array}\right],\left[\begin{array}{cc}
+\mathbf{K} &amp; \mathbf{k} \\
+\mathbf{k}^{\mathrm{T}} &amp; k\left(\mathbf{x}_{t+1},
+\mathbf{x}_{t+1}\right)
+\end{array}\right]\right)\]</span></p>
+<p>在已知<span class="math inline">\(f(x_{1:t})\)</span>的情况下，<span
+class="math inline">\(f(x_{t+1})\)</span>服从一维正态分布，即：</p>
+<p><span class="math display">\[f\left(\mathbf{x}_{t+1}\right) \mid
+f\left(\mathbf{x}_{1: t}\right) \sim N\left(\mu,
+\sigma^{2}\right)\]</span></p>
+<p>可以计算出对应的均值和方差，公式如下：</p>
+<p><span class="math display">\[\begin{array}{l}
+\mu=\mathbf{k}^{\mathrm{T}} \mathbf{K}^{-1}\left(f\left(\mathbf{x}_{1:
+t}\right)-\mu\left(\mathbf{x}_{1:
+t}\right)\right)+\mu\left(\mathbf{x}_{t+1}\right) \\
+\sigma^{2}=k\left(\mathbf{x}_{t+1},
+\mathbf{x}_{t+1}\right)-\mathbf{k}^{\mathrm{T}} \mathbf{K}^{-1}
+\mathbf{k}
+\end{array}\]</span></p>
+<p>计算均值利用了已有采样点处函数值<span
+class="math inline">\(f(x_{1:t})\)</span>，方差只与协方差值有关，与<span
+class="math inline">\(f(x_{1:t})\)</span>无关</p>
+<h3 id="gpr代码实现">GPR代码实现</h3>
+<ul>
+<li>定义高斯核</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">kernel</span>(<span class="params">X1, X2, l=<span class="number">1.0</span>, sigma_f=<span class="number">1.0</span></span>):</span><br><span class="line">    <span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">    X1: Array of m points (m x d).</span></span><br><span class="line"><span class="string">    X2: Array of n points (n x d).</span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        Covariance matrix (m x n).</span></span><br><span class="line"><span class="string">    &#x27;&#x27;&#x27;</span></span><br><span class="line">    sqdist = np.<span class="built_in">sum</span>(X1**<span class="number">2</span>, <span class="number">1</span>).reshape(-<span class="number">1</span>, <span class="number">1</span>) + np.<span class="built_in">sum</span>(X2**<span class="number">2</span>, <span class="number">1</span>) - <span class="number">2</span> * np.dot(X1, X2.T)</span><br><span class="line">    <span class="keyword">return</span> sigma_f**<span class="number">2</span> * np.exp(-<span class="number">0.5</span> / l**<span class="number">2</span> * sqdist)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>计算均值和协方差矩阵</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">posterior_predictive</span>(<span class="params">X_s, X_train, Y_train, l=<span class="number">1.0</span>, sigma_f=<span class="number">1.0</span>, sigma_y=<span class="number">1e-8</span></span>):</span><br><span class="line">    <span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">    根据先验数据点计算均值向量和协方差矩阵</span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        X_s: New input locations (n x d).</span></span><br><span class="line"><span class="string">        X_train: Training locations (m x d).</span></span><br><span class="line"><span class="string">        Y_train: Training targets (m x 1).</span></span><br><span class="line"><span class="string">        l: Kernel length parameter.</span></span><br><span class="line"><span class="string">        sigma_f: Kernel vertical variation parameter.</span></span><br><span class="line"><span class="string">        sigma_y: Noise parameter.</span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        Posterior mean vector (n x d) and covariance matrix (n x n).</span></span><br><span class="line"><span class="string">    &#x27;&#x27;&#x27;</span></span><br><span class="line">    K = kernel(X_train, X_train, l, sigma_f) + sigma_y**<span class="number">2</span> * np.eye(<span class="built_in">len</span>(X_train))</span><br><span class="line">    K_s = kernel(X_train, X_s, l, sigma_f)</span><br><span class="line">    K_ss = kernel(X_s, X_s, l, sigma_f) + <span class="number">1e-8</span> * np.eye(<span class="built_in">len</span>(X_s))</span><br><span class="line">    K_inv = np.linalg.inv(K)</span><br><span class="line">    mu_s = K_s.T.dot(K_inv).dot(Y_train)      <span class="comment"># 均值向量, 注意均值函数被设置为 0</span></span><br><span class="line">    cov_s = K_ss - K_s.T.dot(K_inv).dot(K_s)  <span class="comment"># 协方差矩阵</span></span><br><span class="line">    <span class="keyword">return</span> mu_s, cov_s</span><br></pre></td></tr></table></figure>
+<ul>
+<li>GPR拟合效果绘制</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">plot_gp</span>(<span class="params">mu, cov, X, X_train=<span class="literal">None</span>, Y_train=<span class="literal">None</span>, samples=[]</span>):</span><br><span class="line">    <span class="comment"># 定义gp绘图函数</span></span><br><span class="line">    X = X.ravel()</span><br><span class="line">    mu = mu.ravel()</span><br><span class="line">    uncertainty = <span class="number">1.96</span> * np.sqrt(np.diag(cov))   <span class="comment"># 1.96倍标准差对应95%置信度区间</span></span><br><span class="line"></span><br><span class="line">    plt.fill_between(X, mu + uncertainty, mu - uncertainty, alpha=<span class="number">0.1</span>)</span><br><span class="line">    plt.plot(X, mu, label=<span class="string">&#x27;Mean&#x27;</span>)</span><br><span class="line">    <span class="keyword">for</span> i, sample <span class="keyword">in</span> <span class="built_in">enumerate</span>(samples):</span><br><span class="line">      plt.plot(X, sample, lw=<span class="number">1</span>, ls=<span class="string">&#x27;--&#x27;</span>, label=<span class="string">f&#x27;Sample <span class="subst">&#123;i+<span class="number">1</span>&#125;</span>&#x27;</span>)</span><br><span class="line">      <span class="keyword">if</span> X_train <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">        plt.plot(X_train, Y_train, <span class="string">&#x27;rx&#x27;</span>)</span><br><span class="line">        plt.legend()</span><br><span class="line"></span><br><span class="line">X = np.arange(-<span class="number">5</span>, <span class="number">5</span>, <span class="number">0.2</span>).reshape(-<span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line">X_train = np.array([-<span class="number">4</span>, -<span class="number">3</span>, -<span class="number">2</span>, -<span class="number">1</span>, <span class="number">1</span>]).reshape(-<span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line">Y_train = np.sin(X_train)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 计算均值向量和协方差矩阵</span></span><br><span class="line">mu_s, cov_s = posterior_predictive(X, X_train, Y_train)</span><br><span class="line"></span><br><span class="line">samples = np.random.multivariate_normal(mu_s.ravel(), cov_s, <span class="number">1</span>)</span><br><span class="line">plot_gp(mu_s, cov_s, X, X_train=X_train, Y_train=Y_train, samples=samples)</span><br></pre></td></tr></table></figure>
+<p>结果如下图所示：</p>
+<p><img src="https://images.bumpchicken.cn/img/20220510004441.png" width="60%" height="50%"></p>
+<p>其中，红色叉代表观测值，蓝色线代表均值，浅蓝色区域代表95%置信区间。</p>
+<h2 id="贝叶斯优化原理">贝叶斯优化原理</h2>
+<h4 id="基本过程">基本过程</h4>
+<p>以下是贝叶斯优化的过程</p>
+<p><img src="https://images.bumpchicken.cn/img/20220510004715.png"></p>
+<p>有两个主要组成部分：</p>
+<ol type="1">
+<li>GPR。根据观测点构建高斯过程回归模型，该模型能求取任意点处的函数值及后验概率。</li>
+<li>构造采集函数（acquisition
+function），用于决定本次迭代在哪个点处进行采样。</li>
+</ol>
+<p>算法首先初始化<span
+class="math inline">\(n_{0}\)</span>个点，设定最大迭代次数<span
+class="math inline">\(N\)</span>，开始循环求解，每次增加一个点，寻找下一个点时根据已经找到的<span
+class="math inline">\(n\)</span>个候选解建立高斯回归模型，通过这个模型能得到任意点处的函数值的后验概率。然后根据后验概率构造采集函数，寻找采集函数的极大值点作为下一个搜索点，以此循环，直到达到最大迭代次数，返回<span
+class="math inline">\(N\)</span>个解中的极大值作为最优解。</p>
+<p>采集函数的选择有很多种，最常用的是期望改进（Expected
+Improvement，EI),下一节介绍下EI的原理。</p>
+<h4 id="采集函数">采集函数</h4>
 ]]></content>
       <categories>
         <category>机器学习</category>
       </categories>
       <tags>
         <tag>AutoML</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>动态归整距离（DTW）详解</title>
+    <url>/2019/04/08/DTW/</url>
+    <content><![CDATA[<p>DTW(Dynamic Time
+Warping)动态归整距离是一种衡量两个时间序列相似度的方法</p>
+<span id="more"></span>
+<h2 id="dtw原理">DTW原理</h2>
+<p>在时间序列分析中，需要比较相似性的两段时间序列的长度可能并不相等，在语音识别领域表现为不同人的语速不同。而且同一个单词内的不同音素的发音速度也不同，比如有的人会把‘A’这个音拖得很长，或者把‘i’发的很短。另外，不同时间序列可能仅仅存在时间轴上的位移，亦即在还原位移的情况下，两个时间序列是一致的。在这些复杂情况下，使用传统的欧几里得距离无法有效地求的两个时间序列之间的距离(或者相似性)。</p>
+<p><strong>DTW通过把时间序列进行延伸和缩短，来计算两个时间序列性之间的相似性</strong></p>
+<p><img src="https://images.bumpchicken.cn/img/20220509012950.png" width="50%" height="50%"></p>
+<p>如上图所示，上下两条实线代表两个时间序列，它们之间的虚线代表两个时间序列之间相似的点。DTW使用所有这些相似点之间距离的和，称之为归整路径距离（Warp
+Path Distance)</p>
+<h2 id="dtw计算方法">DTW计算方法</h2>
+<p>令要计算相似度的两个时间序列分别为<span
+class="math inline">\(X\)</span>和<span
+class="math inline">\(Y\)</span>，长度分别为<span
+class="math inline">\(|X|\)</span>和<span
+class="math inline">\(|Y|\)</span></p>
+<h3 id="归整路径warp-path">归整路径(Warp Path)</h3>
+<p>归整路径的形式为<span
+class="math inline">\(W=w_{1},w_{2},...,w_{k}\)</span>,其中<span
+class="math inline">\(Max(|x|,|Y|)&lt;= K &lt;= |X| + |Y|\)</span> <span
+class="math inline">\(w_{k}\)</span>的形式为<span
+class="math inline">\((i,j)\)</span>，其中<span
+class="math inline">\(i\)</span>表示的是<span
+class="math inline">\(X\)</span>中的<span
+class="math inline">\(i\)</span>坐标，<span
+class="math inline">\(j\)</span>表示的是<span
+class="math inline">\(Y\)</span>中的<span
+class="math inline">\(j\)</span>坐标。 归整路径<span
+class="math inline">\(W\)</span>必须从<span
+class="math inline">\(w_{1}=(1,1)\)</span> 开始，到<span
+class="math inline">\(w_{k}=(|X|,|Y|)\)</span>结尾，以保证<span
+class="math inline">\(X\)</span>和<span
+class="math inline">\(Y\)</span>中的每个坐标都在<span
+class="math inline">\(W\)</span>中出现。 另外，<span
+class="math inline">\(w_{k}\)</span>中<span
+class="math inline">\((i,j)\)</span>必须是单调增加的，以保证上图中的虚线不会相交，所谓单调增加是指：</p>
+<p><span class="math display">\[w_{k}=(i,j),
+w_{k+1}=(i^{&#39;},j^{&#39;}) \qquad i&lt;=i^{&#39;}&lt;=i+1,
+j&lt;=j^{&#39;}&lt;=j+1\]</span></p>
+<p>最后得到的归整路径是距离最短的一个路径:</p>
+<p><span class="math display">\[Dist(W)=\sum^{k=K}_{k=1}Dist(w_{ki},
+w_{kj})\]</span></p>
+<p>其中<span class="math inline">\(Dist(w_{ki},
+w_{kj}\)</span>为任意经典的距离计算方法，比如欧氏距离。<span
+class="math inline">\(w_{ki}\)</span>是指<span
+class="math inline">\(X\)</span>的第i个数据点，<span
+class="math inline">\(w_{kj}\)</span>是指<span
+class="math inline">\(Y\)</span>的第<span
+class="math inline">\(j\)</span>个数据点</p>
+<h3 id="dtw实现">DTW实现</h3>
+<p>在实现DTW时，我们采用动态规划的思想，令<span
+class="math inline">\(D(i,j)\)</span>表示长度为<span
+class="math inline">\(i\)</span>和<span
+class="math inline">\(j\)</span>的两个时间序列之间的归整路径距离:</p>
+<p><span
+class="math display">\[D(i,j)=Dist(i,j)+min[D(i-1,j),D(i,j-1),D(i-1,j-1)]\]</span></p>
+<p><img src="https://images.bumpchicken.cn/img/20220509015951.png" width="80%" height="30%"></p>
+<p>代码如下: <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">distance</span>(<span class="params">x,y</span>):</span><br><span class="line">   <span class="string">&quot;&quot;&quot;定义你的距离函数，欧式距离，街区距离等等&quot;&quot;&quot;</span></span><br><span class="line">   <span class="keyword">return</span> <span class="built_in">abs</span>(x-y)</span><br><span class="line">  </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">dtw</span>(<span class="params">X,Y</span>):</span><br><span class="line">    M=[[distance(X[i],Y[j]) <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(X))] <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(Y))]</span><br><span class="line">    l1=<span class="built_in">len</span>(X)</span><br><span class="line">    l2=<span class="built_in">len</span>(Y) </span><br><span class="line">    D=[[<span class="number">0</span> <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(l1+<span class="number">1</span>)] <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(l2+<span class="number">1</span>)]</span><br><span class="line">    D[<span class="number">0</span>][<span class="number">0</span>]=<span class="number">0</span> </span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,l1+<span class="number">1</span>):</span><br><span class="line">      D[i][<span class="number">0</span>]=sys.maxint</span><br><span class="line">    <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,l2+<span class="number">1</span>):</span><br><span class="line">      D[<span class="number">0</span>][j]=sys.maxint</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,l1+<span class="number">1</span>):</span><br><span class="line">      <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,l2+<span class="number">1</span>):</span><br><span class="line">        D[i][j]=M[i-<span class="number">1</span>][j-<span class="number">1</span>]+<span class="built_in">min</span>(D[i-<span class="number">1</span>][j],D[i][j-<span class="number">1</span>],D[i-<span class="number">1</span>][j-<span class="number">1</span>])</span><br><span class="line">    <span class="keyword">return</span> D[l1][l2]</span><br></pre></td></tr></table></figure></p>
+<p><strong>DTW采用动态规划实现，时间复杂度为<span
+class="math inline">\(O(N^{2})\)</span>,有一些改进的快速DTW算法，如FastDTW[1],
+SparseDTW, LB_Keogh, LB_Imporved等</strong></p>
+<h2 id="参考资料">参考资料</h2>
+<ol type="1">
+<li>FastDTW: Toward Accurate Dynamic Time Warping in Linear Time and
+Space. Stan Salvador, Philip Chan.</li>
+</ol>
+]]></content>
+      <categories>
+        <category>时间序列分析</category>
+      </categories>
+      <tags>
+        <tag>时间序列分析</tag>
       </tags>
   </entry>
   <entry>
@@ -317,6 +385,87 @@ class="math inline">\(dim\)</span>表示聚类空间的维度大小</p>
       </categories>
       <tags>
         <tag>聚类</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>孤立森林原理详解</title>
+    <url>/2020/05/25/IsolationTree/</url>
+    <content><![CDATA[<p><img src="https://images.bumpchicken.cn/img/tree.png" /></p>
+<p>孤立森林（Isolation
+Forest）是周志华团队于2008年提出的一种具有线性复杂度的异常检测算法，被工业界广泛应用于诸如异常流量检测,金融欺诈行为检测等场景。</p>
+<span id="more"></span>
+<h2 id="算法原理">算法原理</h2>
+<p>异常检测领域，通常是正常的样本占大多数，离群点占绝少数，因此大多数异常检测算法的基本思想都是对正常点构建模型，然后根据规则识别出不属于正常点模型的离群点，比较典型的算法有One
+Class SVM(OCSVM), Local Outlier
+Factor(LOF)。和多数异常检测算法不同，孤立森林采用了一种较为高效的异常发现算法，其思路很朴素，但也足够直观有效。</p>
+<p>考虑以下场景，一个二维平面上零零散散分布着一些点，随机使用分割线对其进行分割，直至所有但点都不可再划分（即被孤立了）。直观上来讲，可以发现那些密度很高的簇需要被切割很多次才会停止切割，但是密度很低的点很快就会停止切割到某个子空间了。</p>
+<p><img src="https://images.bumpchicken.cn/img/20220424235501.png" width="90%" height="50%"></p>
+<p>孤立森林分<b>训练</b>和<b>异常评估</b>两部分:</p>
+<ul>
+<li><b>训练:</b> 根据样本抽样构建多棵iTree，形成孤立森林</li>
+<li><b>异常评估:</b>
+根据训练过程构建的孤立森林，计算待评估值的异常得分</li>
+</ul>
+<h2 id="训练">训练</h2>
+<ol type="1">
+<li>给定训练数据集<span
+class="math inline">\(X\)</span>，确定需要构建的孤立树（iTree）个数t，按<span
+class="math inline">\(\phi\)</span>采样大小随机取样作为子样本集<span
+class="math inline">\(X^{&#39;}\)</span></li>
+<li>在子样本集<span
+class="math inline">\(X^{&#39;}\)</span>上构建一棵孤立树(iTree)，过程如下图所示：</li>
+</ol>
+<p><img src="https://images.bumpchicken.cn/img/20220508001729.png" width="80%" height="20%"></p>
+<ol type="a">
+<li><p>在<span
+class="math inline">\(X\)</span>中随机选择一个属性（维度），在当前样本数据范围内，随机产生一个分割点<span
+class="math inline">\(p\)</span>(介于当前维度最大和最小值之间)</p></li>
+<li><p>此切割点即是一个超平面，将当前节点数据空间切分成2个子空间：将当前所选维度下小于p点的放在当前节点左分支，把大于p点的放在当前节点的右分支</p></li>
+<li><p>在节点的左分支和右分支递归执行步骤a，b，不断构造新的叶子节点，直到叶子节点上只有一个数据或者树已经生长到了限制的高度</p></li>
+<li><p>单棵iTree构建完成</p></li>
+</ol>
+<ol start="3" type="1">
+<li>按2的过程，依次构建t棵iTree，得到孤立森林</li>
+</ol>
+<p><img src="https://images.bumpchicken.cn/img/20220508003153.png" width="80%" height="30%"></p>
+<h2 id="异常评估">异常评估</h2>
+<p>构建了孤立森林(IForest)后，可以评估某个点<span
+class="math inline">\(x\)</span>的异常得分，用到如下公式:</p>
+<p><span class="math display">\[s(x,n)=2^{-\frac{E(h(x))}{c(n}}
+\]</span></p>
+<p>其中，<span class="math inline">\(h(x)\)</span> 表示<span
+class="math inline">\(x\)</span>在某棵孤立树中的路径长度，<span
+class="math inline">\(E(h(x))\)</span>
+表示在所有孤立树中的期望路径长度。<span
+class="math inline">\(c(n)\)</span>
+为样本数为n时的二叉排序树(BST)的平均搜索路径长度，用来对样本<span
+class="math inline">\(x\)</span>的期望路径长度做归一化处理。<span
+class="math inline">\(c(n)\)</span>公式如下:</p>
+<p><span class="math display">\[c(n)=2H(n-1)-(2(n-1)/n)\]</span></p>
+<p>其中，<span class="math inline">\(H(i)\)</span>是一个调和数，约等于
+<span class="math inline">\(ln(i) + \gamma\)</span>，<span
+class="math inline">\(\gamma\)</span>为欧拉常数，约等于0.5772156649</p>
+<p>论文对于异常得分分布有如下结论：</p>
+<ol type="1">
+<li><p>如果异常得分接近1，那么一定是异常点</p></li>
+<li><p>如果异常得分远小于0.5, 那么一定不是异常点</p></li>
+<li><p>如果样本点的异常得分均在0.5左右，那么样本中可能不存在异常点</p></li>
+</ol>
+<p>异常得分<span class="math inline">\(s\)</span>和<span
+class="math inline">\(E(h(x))\)</span>关系图如下所示</p>
+<p><img src="https://images.bumpchicken.cn/img/20220508010609.png" width="50%" height="30%"></p>
+<p>异常得分的等高线图如下所示，通常潜在的异常点<span
+class="math inline">\(s&gt;=0.6\)</span>
+<img src="http://images.bumpchicken.cn/img/20220508010909.png" width="50%" height="30%"></p>
+<h2 id="参考资料">参考资料</h2>
+<p>1.Liu F T, Ting K M, Zhou Z H. Isolation forest[C]//2008 Eighth IEEE
+International Conference on Data Mining. IEEE, 2008: 413-422.</p>
+]]></content>
+      <categories>
+        <category>异常检测</category>
+      </categories>
+      <tags>
+        <tag>异常检测</tag>
       </tags>
   </entry>
   <entry>
@@ -438,82 +587,6 @@ notebook</a></p>
       </categories>
       <tags>
         <tag>排序</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>动态归整距离（DTW）详解</title>
-    <url>/2019/04/08/DTW/</url>
-    <content><![CDATA[<p>DTW(Dynamic Time
-Warping)动态归整距离是一种衡量两个时间序列相似度的方法</p>
-<span id="more"></span>
-<h2 id="dtw原理">DTW原理</h2>
-<p>在时间序列分析中，需要比较相似性的两段时间序列的长度可能并不相等，在语音识别领域表现为不同人的语速不同。而且同一个单词内的不同音素的发音速度也不同，比如有的人会把‘A’这个音拖得很长，或者把‘i’发的很短。另外，不同时间序列可能仅仅存在时间轴上的位移，亦即在还原位移的情况下，两个时间序列是一致的。在这些复杂情况下，使用传统的欧几里得距离无法有效地求的两个时间序列之间的距离(或者相似性)。</p>
-<p><strong>DTW通过把时间序列进行延伸和缩短，来计算两个时间序列性之间的相似性</strong></p>
-<p><img src="https://images.bumpchicken.cn/img/20220509012950.png" width="50%" height="50%"></p>
-<p>如上图所示，上下两条实线代表两个时间序列，它们之间的虚线代表两个时间序列之间相似的点。DTW使用所有这些相似点之间距离的和，称之为归整路径距离（Warp
-Path Distance)</p>
-<h2 id="dtw计算方法">DTW计算方法</h2>
-<p>令要计算相似度的两个时间序列分别为<span
-class="math inline">\(X\)</span>和<span
-class="math inline">\(Y\)</span>，长度分别为<span
-class="math inline">\(|X|\)</span>和<span
-class="math inline">\(|Y|\)</span></p>
-<h3 id="归整路径warp-path">归整路径(Warp Path)</h3>
-<p>归整路径的形式为<span
-class="math inline">\(W=w_{1},w_{2},...,w_{k}\)</span>,其中<span
-class="math inline">\(Max(|x|,|Y|)&lt;= K &lt;= |X| + |Y|\)</span> <span
-class="math inline">\(w_{k}\)</span>的形式为<span
-class="math inline">\((i,j)\)</span>，其中<span
-class="math inline">\(i\)</span>表示的是<span
-class="math inline">\(X\)</span>中的<span
-class="math inline">\(i\)</span>坐标，<span
-class="math inline">\(j\)</span>表示的是<span
-class="math inline">\(Y\)</span>中的<span
-class="math inline">\(j\)</span>坐标。 归整路径<span
-class="math inline">\(W\)</span>必须从<span
-class="math inline">\(w_{1}=(1,1)\)</span> 开始，到<span
-class="math inline">\(w_{k}=(|X|,|Y|)\)</span>结尾，以保证<span
-class="math inline">\(X\)</span>和<span
-class="math inline">\(Y\)</span>中的每个坐标都在<span
-class="math inline">\(W\)</span>中出现。 另外，<span
-class="math inline">\(w_{k}\)</span>中<span
-class="math inline">\((i,j)\)</span>必须是单调增加的，以保证上图中的虚线不会相交，所谓单调增加是指：</p>
-<p><span class="math display">\[w_{k}=(i,j),
-w_{k+1}=(i^{&#39;},j^{&#39;}) \qquad i&lt;=i^{&#39;}&lt;=i+1,
-j&lt;=j^{&#39;}&lt;=j+1\]</span></p>
-<p>最后得到的归整路径是距离最短的一个路径:</p>
-<p><span class="math display">\[Dist(W)=\sum^{k=K}_{k=1}Dist(w_{ki},
-w_{kj})\]</span></p>
-<p>其中<span class="math inline">\(Dist(w_{ki},
-w_{kj}\)</span>为任意经典的距离计算方法，比如欧氏距离。<span
-class="math inline">\(w_{ki}\)</span>是指<span
-class="math inline">\(X\)</span>的第i个数据点，<span
-class="math inline">\(w_{kj}\)</span>是指<span
-class="math inline">\(Y\)</span>的第<span
-class="math inline">\(j\)</span>个数据点</p>
-<h3 id="dtw实现">DTW实现</h3>
-<p>在实现DTW时，我们采用动态规划的思想，令<span
-class="math inline">\(D(i,j)\)</span>表示长度为<span
-class="math inline">\(i\)</span>和<span
-class="math inline">\(j\)</span>的两个时间序列之间的归整路径距离:</p>
-<p><span
-class="math display">\[D(i,j)=Dist(i,j)+min[D(i-1,j),D(i,j-1),D(i-1,j-1)]\]</span></p>
-<p><img src="https://images.bumpchicken.cn/img/20220509015951.png" width="80%" height="30%"></p>
-<p>代码如下: <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">distance</span>(<span class="params">x,y</span>):</span><br><span class="line">   <span class="string">&quot;&quot;&quot;定义你的距离函数，欧式距离，街区距离等等&quot;&quot;&quot;</span></span><br><span class="line">   <span class="keyword">return</span> <span class="built_in">abs</span>(x-y)</span><br><span class="line">  </span><br><span class="line"><span class="keyword">def</span> <span class="title function_">dtw</span>(<span class="params">X,Y</span>):</span><br><span class="line">    M=[[distance(X[i],Y[j]) <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(X))] <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(Y))]</span><br><span class="line">    l1=<span class="built_in">len</span>(X)</span><br><span class="line">    l2=<span class="built_in">len</span>(Y) </span><br><span class="line">    D=[[<span class="number">0</span> <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(l1+<span class="number">1</span>)] <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(l2+<span class="number">1</span>)]</span><br><span class="line">    D[<span class="number">0</span>][<span class="number">0</span>]=<span class="number">0</span> </span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,l1+<span class="number">1</span>):</span><br><span class="line">      D[i][<span class="number">0</span>]=sys.maxint</span><br><span class="line">    <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,l2+<span class="number">1</span>):</span><br><span class="line">      D[<span class="number">0</span>][j]=sys.maxint</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,l1+<span class="number">1</span>):</span><br><span class="line">      <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,l2+<span class="number">1</span>):</span><br><span class="line">        D[i][j]=M[i-<span class="number">1</span>][j-<span class="number">1</span>]+<span class="built_in">min</span>(D[i-<span class="number">1</span>][j],D[i][j-<span class="number">1</span>],D[i-<span class="number">1</span>][j-<span class="number">1</span>])</span><br><span class="line">    <span class="keyword">return</span> D[l1][l2]</span><br></pre></td></tr></table></figure></p>
-<p><strong>DTW采用动态规划实现，时间复杂度为<span
-class="math inline">\(O(N^{2})\)</span>,有一些改进的快速DTW算法，如FastDTW[1],
-SparseDTW, LB_Keogh, LB_Imporved等</strong></p>
-<h2 id="参考资料">参考资料</h2>
-<ol type="1">
-<li>FastDTW: Toward Accurate Dynamic Time Warping in Linear Time and
-Space. Stan Salvador, Philip Chan.</li>
-</ol>
-]]></content>
-      <categories>
-        <category>时间序列分析</category>
-      </categories>
-      <tags>
-        <tag>时间序列分析</tag>
       </tags>
   </entry>
 </search>
