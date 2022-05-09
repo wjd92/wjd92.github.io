@@ -29,7 +29,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://images.bumpchicken.cn/img/20220509122455.png">
 <meta property="article:published_time" content="2020-12-29T04:07:00.000Z">
-<meta property="article:modified_time" content="2022-05-09T04:56:16.256Z">
+<meta property="article:modified_time" content="2022-05-09T07:31:57.193Z">
 <meta property="article:author" content="wjd">
 <meta property="article:tag" content="AutoML">
 <meta name="twitter:card" content="summary">
@@ -227,7 +227,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-09 12:56:16" itemprop="dateModified" datetime="2022-05-09T12:56:16+08:00">2022-05-09</time>
+                <time title="修改时间：2022-05-09 15:31:57" itemprop="dateModified" datetime="2022-05-09T15:31:57+08:00">2022-05-09</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -251,10 +251,135 @@
 
       
         <p><img src="https://images.bumpchicken.cn/img/20220509122455.png"></p>
-<p>贝叶斯优化(Bayesian Optimization, BO)是一种黑盒优化算法，用于求解表达式未知的函数极值问题。算法使用高斯过程回归对一组采样点的函数值进行概率建模，预测出任意点处函数值的概率分布，然后构造采集函数(Acquistion Function)，用于衡量每一个点值得探索(explore)的程度，求解采集函数的极值从而确定下一个采样点，最后返回这组采样点的极值作为函数的极值。</p>
+<p>贝叶斯优化(Bayesian Optimization,
+BO)是一种黑盒优化算法，用于求解表达式未知的函数极值问题。算法使用高斯过程回归对一组采样点的函数值进行概率建模，预测出任意点处函数值的概率分布，然后构造采集函数(Acquistion
+Function)，用于衡量每一个点值得探索(explore)的程度，求解采集函数的极值从而确定下一个采样点，最后返回这组采样点的极值作为函数的极值。</p>
 <span id="more"></span>
-<h2 id="黑盒优化问题"><a href="#黑盒优化问题" class="headerlink" title="黑盒优化问题"></a>黑盒优化问题</h2><p>训练机器学习模型过程中，会有很多模型参数之外的参数，如学习率，卷积核大小等，再比如训练xgboost时，树的最大深度、采样率等参数都会影响训练结果，这些参数我们将其称为超参数。假设一组超参数组合$X = x<em>{1},x</em>{2},…,x_{n}$，存在一个未知函数 $f:x \rightarrow \mathbb{R}$，我们需要在$x \subseteq X $找到一组最佳参数组合$x^{*}$使得:</p>
-<script type="math/tex; mode=display">x^{*} = \underset{x\in X}{argmin} f(x)</script><p>当$f$是凸函数并且定义域也是凸的时候，可以通过凸优化手段(梯度下降、L_BFGS等)来求解。但是超参数优化属于黑盒优化问题，$f$不一定是凸函数，并且是未知的，在优化过程中只能得到函数的输入和输出，不能获取目标函数的表达式和梯度信息，这里的$f$通常还是计算代价非常昂贵的函数，因此优化过程会比较困难，尤其是当超参数数量大的情况。常用的超参数优化方法有网格搜索(Grid Search)，随机搜索(Random Search)，遗传算法（粒子群优化、模拟退火等）以及本文要介绍的贝叶斯优化方法。</p>
+<h2 id="黑盒优化问题">黑盒优化问题</h2>
+<p>训练机器学习模型过程中，会有很多模型参数之外的参数，如学习率，卷积核大小等，再比如训练xgboost时，树的最大深度、采样率等参数都会影响训练结果，这些参数我们将其称为超参数。假设一组超参数组合<span
+class="math inline">\(X=x_{1},x_{2},...,x_{n}\)</span>，存在一个未知函数
+<span class="math inline">\(f:x \rightarrow \mathbb
+{R}\)</span>，我们需要在<span class="math inline">\(x \in
+X\)</span>找到一组最佳参数组合<span
+class="math inline">\(x^{*}\)</span>使得:</p>
+<p><span class="math display">\[x^{*} = \underset{x\in X}{argmin} f(x)
+\]</span></p>
+<p>当<span
+class="math inline">\(f\)</span>是凸函数并且定义域也是凸的时候，可以通过凸优化手段(梯度下降、L_BFGS等)来求解。但是超参数优化属于黑盒优化问题，<span
+class="math inline">\(f\)</span>不一定是凸函数，并且是未知的，在优化过程中只能得到函数的输入和输出，不能获取目标函数的表达式和梯度信息，这里的<span
+class="math inline">\(f\)</span>通常还是计算代价非常昂贵的函数，因此优化过程会比较困难，尤其是当超参数数量大的情况。常用的超参数优化方法有网格搜索(Grid
+Search)，随机搜索(Random
+Search)，遗传算法（粒子群优化、模拟退火等）以及本文要介绍的贝叶斯优化方法。</p>
+<p>下面介绍两种最基本的超参调优方法: 网格搜索法和随机搜索法</p>
+<ul>
+<li><p>网格搜索法</p>
+<p>网格搜索法搜索一组离散的取值情况，得到最优参数值。如果是连续型的超参数，则需要对其定义域进行网格划分，然后选取典型值计算。网格搜索法本质上是一种穷举法，对待调优参数进行全排列组合，逐一计算<span
+class="math inline">\(f\)</span>，然后选取最小的<span
+class="math inline">\(f\)</span>时的参数组合，如下代码所示，给定参数候选项，我们可以列出所有的参数组合
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> itertools <span class="keyword">import</span> product</span><br><span class="line">tuning_params = &#123;<span class="string">&#x27;a&#x27;</span>:[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>], <span class="string">&#x27;b&#x27;</span>:[<span class="number">4</span>,<span class="number">5</span>]&#125;                     <span class="comment"># 待优化参数可选项</span></span><br><span class="line"><span class="keyword">for</span> conf <span class="keyword">in</span> product(*tuning_params.values()):</span><br><span class="line">    <span class="built_in">print</span>(&#123;k:v <span class="keyword">for</span> k,v <span class="keyword">in</span> <span class="built_in">zip</span>(tuning_params.keys(), conf)&#125;)  <span class="comment"># 生成参数组合</span></span><br></pre></td></tr></table></figure> 输出: <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="string">&#x27;a&#x27;</span>: <span class="number">1</span>, <span class="string">&#x27;b&#x27;</span>: <span class="number">4</span>&#125;</span><br><span class="line">&#123;<span class="string">&#x27;a&#x27;</span>: <span class="number">1</span>, <span class="string">&#x27;b&#x27;</span>: <span class="number">5</span>&#125;</span><br><span class="line">&#123;<span class="string">&#x27;a&#x27;</span>: <span class="number">2</span>, <span class="string">&#x27;b&#x27;</span>: <span class="number">4</span>&#125;</span><br><span class="line">&#123;<span class="string">&#x27;a&#x27;</span>: <span class="number">2</span>, <span class="string">&#x27;b&#x27;</span>: <span class="number">5</span>&#125;</span><br><span class="line">&#123;<span class="string">&#x27;a&#x27;</span>: <span class="number">3</span>, <span class="string">&#x27;b&#x27;</span>: <span class="number">4</span>&#125;</span><br><span class="line">&#123;<span class="string">&#x27;a&#x27;</span>: <span class="number">3</span>, <span class="string">&#x27;b&#x27;</span>: <span class="number">5</span>&#125;</span><br></pre></td></tr></table></figure>
+随着待调优参数增加，生成的全排列组合数量将非常巨大，计算代价过于昂贵</p></li>
+<li><p>随机搜索法
+相比于网格搜索法，随机搜索的做法是将超参数随机地取某些值，设置一个最大迭代次数，比较每次迭代中不同取值算法的输出，得到最优超参数组合。而随机取值的方法也有多种不同的做法，常用的做法是采用均匀分布的随机数进行搜索，或者采用一些启发式的搜索策略（粒子群优化算法），这里不展开赘述。随机搜索并不总能找到全局最优解，但是通常认为随机搜索比网格搜索更优，其可以花费更少的计算代价得到相近的结果。</p></li>
+</ul>
+<p><strong>无论是网格搜索法还是随机搜索法，每一次进行迭代计算的时候，都未曾考虑已经搜索过的空间，即搜索过的空间未对下一次搜索产生任何指导作用，因此可能存在很多无效搜索。不同于网格搜索和随机搜索法，贝叶斯优化则能够通过高斯过程回归有效利用先验的搜索空间进行下一次搜索参数的选择，能大大减少迭代次数</strong></p>
+<h2 id="理论准备">理论准备</h2>
+<p>经典的贝叶斯优化利用高斯过程(Gaussian Process, GP)对<span
+class="math inline">\(f\)</span>进行概率建模，在介绍贝叶斯优化之前，有必要了解一下高斯过程回归的相关知识</p>
+<h3 id="高斯过程">高斯过程</h3>
+<p>高斯过程用于对一组随着时间增长的随机向量进行建模，在任意时刻，某个向量的所有子向量均服从高斯分布。
+假设有连续型随机变量序列<span
+class="math inline">\(x_{1},x_{2},...,x_{T}\)</span>，如果该序列中任意数量的随机变量构成的向量<span
+class="math inline">\(X_{t_{1}, ... ,t_{k}} = [x_{t_{1}} \space ...
+\space
+x_{t_{k}}]^{T}\)</span>均服从多维正态分布，则称次随机变量序列为高斯过程。</p>
+<p>特别地，假设当前有k个随机变量<span
+class="math inline">\(x_{1},...,x{k}\)</span>，它们服从k维正态分布<span
+class="math inline">\(N( \mu_{k}, \sum _{k}
+)\)</span>，其中均值向量<span class="math inline">\(N( \mu_{k}, \sum
+_{k} )\)</span>，协方差矩阵<span class="math inline">\(\sum _{k} \in
+\mathbb R^{k*k}\)</span></p>
+<p>当加入一个新的随机变量<span
+class="math inline">\(x_{k+1}\)</span>之后，随机向量<span
+class="math inline">\(x_{1},x_{2},...,x_{k},x_{k+1}\)</span>服从k+1维正态分布<span
+class="math inline">\(\mu_{k+1} \in
+\mathbb{R}^{k+1}\)</span>，其中均值向量<span
+class="math inline">\(\mu_{k+1} \in
+\mathbb{R}^{k+1}\)</span>，协方差矩阵<span class="math inline">\(\sum
+_{k+1} \in \mathbb R^{(k+1)*(k+1)}\)</span></p>
+<p>由于正态分布的积分能够得到解析解，因此可以方便地得到边缘概率于条件概率。</p>
+<h3 id="高斯过程回归">高斯过程回归</h3>
+<p>机器学习中，算法通常是根据输入值<span
+class="math inline">\(x\)</span>预测出一个最佳输出值<span
+class="math inline">\(y\)</span>，用于分类或回归。某些情况下我们需要的不是预测出一个函数值，而是给出这个函数值的后验概率分布<span
+class="math inline">\(p(y|x)\)</span>。对于实际应用问题，一般是给定一组样本点<span
+class="math inline">\(x_{i}, \space
+i=1,…,l\)</span>，基于此拟合出一个假设函数，给定输入值<span
+class="math inline">\(x\)</span>，预测其标签值或者后验概率<span
+class="math inline">\(p(y|x)\)</span>，高斯过程回归对应后者。</p>
+<p>高斯过程回归(Gaussian Process Regression,
+GPR)对表达式未知的函数的一组函数值进行概率建模，给出函数值的概率分布。嘉定给定某些点<span
+class="math inline">\(x_{i}, i=
+1,…,t\)</span>，以及在这些点处的函数值<span
+class="math inline">\(f(x_{i})\)</span>，GPR能够根据这些点，拟合该未知函数，那么对于任意给定的<span
+class="math inline">\(x\)</span>，就可以预测出<span
+class="math inline">\(f(x)\)</span>，并且能够给出预测结果的置信度。</p>
+<p>GPR假设黑盒函数在各个点处的函数值<span
+class="math inline">\(f(x)\)</span>都是随机变量，它们构成的随机向量服从多维正态分布。假设有t个采样点<span
+class="math inline">\(x_{1},…,x_{t}\)</span>，在这些点处的函数值构成向量：</p>
+<p><span class="math display">\[f(x_{1:t}) = [f(x_{1} \space ... \space
+f(x_{t})]\]</span></p>
+<p>GPR假设此向量服从t维正态分布：</p>
+<p><span class="math display">\[f(x_{1:t}) \sim N(\mu(x_{1:t}),
+\sum(x_{1:t},x_{1:t}))\]</span></p>
+<p>其中，<span
+class="math inline">\(\mu(x_{1:t})=[\mu(x_{1}),…,\mu(x_{t})]\)</span>是高斯分布的均值向量，<span
+class="math inline">\(\sum(x_{1:t},x_{1:t})\)</span>是协方差矩阵</p>
+<p><span class="math display">\[\left[\begin{array}{ccc}
+\operatorname{cov}\left(\mathbf{x}_{1}, \mathbf{x}_{1}\right) &amp;
+\ldots &amp; \operatorname{cov}\left(\mathbf{x}_{1},
+\mathbf{x}_{t}\right) \\
+\cdots &amp; \ldots &amp; \ldots \\
+\operatorname{cov}\left(\mathbf{x}_{t}, \mathbf{x}_{1}\right) &amp;
+\ldots &amp; \operatorname{cov}\left(\mathbf{x}_{t},
+\mathbf{x}_{t}\right)
+\end{array}\right]=\left[\begin{array}{ccc}
+k\left(\mathbf{x}_{1}, \mathbf{x}_{1}\right) &amp; \ldots &amp;
+k\left(\mathbf{x}_{1}, \mathbf{x}_{t}\right) \\
+\ldots &amp; \ldots &amp; \ldots \\
+k\left(\mathbf{x}_{t}, \mathbf{x}_{1}\right) &amp; \ldots &amp;
+k\left(\mathbf{x}_{t}, \mathbf{x}_{t}\right)
+\end{array}\right]\]</span></p>
+<p>问题的关键是如何根据样本值计算出正态分布的均值向量和协方差矩阵，均值向量是通过均值函数<span
+class="math inline">\(\mu(x)\)</span>根据每个采样点x计算构造的，可简单令<span
+class="math inline">\(\mu(x)=c\)</span>，或者将均值设置为0，因为即使均值设置为常数，由于有方差的作用，依然能够对数据进行有效建模。</p>
+<p>协方差通过核函数<span
+class="math inline">\(k(x,x^{&#39;})\)</span>计算得到，也称为协方差函数，协方差函数需要满足以下要求：</p>
+<ol type="1">
+<li>距离相近的样本点<span class="math inline">\(x\)</span>和<span
+class="math inline">\(x^{&#39;}\)</span>之间有更大的正协方差值，因为相近的两个点的函数值有更强的相关性</li>
+<li>保证协方差矩阵是对称半正定矩阵</li>
+</ol>
+<p>常用的是高斯核核Matern核，高斯核定义为：</p>
+<p><span class="math display">\[k\left(\mathbf{x}_{1},
+\mathbf{x}_{2}\right)=\alpha_{0} \exp \left(-\frac{1}{2
+\sigma^{2}}\left\|\mathbf{x}_{1}-\mathbf{x}_{2}\right\|^{2}\right)\]</span></p>
+<p>Matern核定义为:</p>
+<p><span class="math display">\[k\left(\mathbf{x}_{1},
+\mathbf{x}_{2}\right)=\frac{2^{1-v}}{\Gamma(v)}\left(\sqrt{2
+v}\left\|\mathbf{x}_{1}-\mathbf{x}_{2}\right\|\right)^{v}
+K_{v}\left(\sqrt{2
+v}\left\|\mathbf{x}_{1}-\mathbf{x}_{2}\right\|\right)\]</span></p>
+<p>其中<span class="math inline">\(\Gamma\)</span>是伽马函数，<span
+class="math inline">\(K_{v}\)</span>是贝塞尔函数(Bessel function)，<span
+class="math inline">\(v\)</span>是人工设定的正参数。用核函数计算任意两点之间的核函数值，得到核函数矩阵<span
+class="math inline">\(K\)</span>作为协方差矩阵的估计值：</p>
+<p><span class="math display">\[\mathbf{K}=\left[\begin{array}{ccc}
+k\left(\mathbf{x}_{1}, \mathbf{x}_{1}\right) &amp; \ldots &amp;
+k\left(\mathbf{x}_{1}, \mathbf{x}_{t}\right) \\
+\ldots &amp; \ldots &amp; \ldots \\
+k\left(\mathbf{x}_{t}, \mathbf{x}_{1}\right) &amp; \ldots &amp;
+k\left(\mathbf{x}_{t}, \mathbf{x}_{t}\right)
+\end{array}\right]\]</span></p>
 
     </div>
 
@@ -336,7 +461,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%BB%91%E7%9B%92%E4%BC%98%E5%8C%96%E9%97%AE%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">黑盒优化问题</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%BB%91%E7%9B%92%E4%BC%98%E5%8C%96%E9%97%AE%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">黑盒优化问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%90%86%E8%AE%BA%E5%87%86%E5%A4%87"><span class="nav-number">2.</span> <span class="nav-text">理论准备</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AB%98%E6%96%AF%E8%BF%87%E7%A8%8B"><span class="nav-number">2.1.</span> <span class="nav-text">高斯过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AB%98%E6%96%AF%E8%BF%87%E7%A8%8B%E5%9B%9E%E5%BD%92"><span class="nav-number">2.2.</span> <span class="nav-text">高斯过程回归</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
