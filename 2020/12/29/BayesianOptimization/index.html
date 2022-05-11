@@ -30,8 +30,10 @@
 <meta property="og:image" content="https://images.bumpchicken.cn/img/20220509122455.png">
 <meta property="og:image" content="https://images.bumpchicken.cn/img/20220510004441.png">
 <meta property="og:image" content="https://images.bumpchicken.cn/img/20220510004715.png">
+<meta property="og:image" content="https://images.bumpchicken.cn/img/20220511172849.png">
+<meta property="og:image" content="https://images.bumpchicken.cn/img/20220511173250.png">
 <meta property="article:published_time" content="2020-12-29T04:07:00.000Z">
-<meta property="article:modified_time" content="2022-05-09T16:51:33.717Z">
+<meta property="article:modified_time" content="2022-05-11T09:37:53.447Z">
 <meta property="article:author" content="wjd">
 <meta property="article:tag" content="AutoML">
 <meta name="twitter:card" content="summary">
@@ -229,7 +231,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-10 00:51:33" itemprop="dateModified" datetime="2022-05-10T00:51:33+08:00">2022-05-10</time>
+                <time title="修改时间：2022-05-11 17:37:53" itemprop="dateModified" datetime="2022-05-11T17:37:53+08:00">2022-05-11</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -435,7 +437,7 @@ class="math inline">\(f(x_{1:t})\)</span>无关</p>
 </ul>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">plot_gp</span>(<span class="params">mu, cov, X, X_train=<span class="literal">None</span>, Y_train=<span class="literal">None</span>, samples=[]</span>):</span><br><span class="line">    <span class="comment"># 定义gp绘图函数</span></span><br><span class="line">    X = X.ravel()</span><br><span class="line">    mu = mu.ravel()</span><br><span class="line">    uncertainty = <span class="number">1.96</span> * np.sqrt(np.diag(cov))   <span class="comment"># 1.96倍标准差对应95%置信度区间</span></span><br><span class="line"></span><br><span class="line">    plt.fill_between(X, mu + uncertainty, mu - uncertainty, alpha=<span class="number">0.1</span>)</span><br><span class="line">    plt.plot(X, mu, label=<span class="string">&#x27;Mean&#x27;</span>)</span><br><span class="line">    <span class="keyword">for</span> i, sample <span class="keyword">in</span> <span class="built_in">enumerate</span>(samples):</span><br><span class="line">      plt.plot(X, sample, lw=<span class="number">1</span>, ls=<span class="string">&#x27;--&#x27;</span>, label=<span class="string">f&#x27;Sample <span class="subst">&#123;i+<span class="number">1</span>&#125;</span>&#x27;</span>)</span><br><span class="line">      <span class="keyword">if</span> X_train <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">        plt.plot(X_train, Y_train, <span class="string">&#x27;rx&#x27;</span>)</span><br><span class="line">        plt.legend()</span><br><span class="line"></span><br><span class="line">X = np.arange(-<span class="number">5</span>, <span class="number">5</span>, <span class="number">0.2</span>).reshape(-<span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line">X_train = np.array([-<span class="number">4</span>, -<span class="number">3</span>, -<span class="number">2</span>, -<span class="number">1</span>, <span class="number">1</span>]).reshape(-<span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line">Y_train = np.sin(X_train)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 计算均值向量和协方差矩阵</span></span><br><span class="line">mu_s, cov_s = posterior_predictive(X, X_train, Y_train)</span><br><span class="line"></span><br><span class="line">samples = np.random.multivariate_normal(mu_s.ravel(), cov_s, <span class="number">1</span>)</span><br><span class="line">plot_gp(mu_s, cov_s, X, X_train=X_train, Y_train=Y_train, samples=samples)</span><br></pre></td></tr></table></figure>
 <p>结果如下图所示：</p>
-<p><img src="https://images.bumpchicken.cn/img/20220510004441.png" width="60%" height="50%"></p>
+<p><img src="https://images.bumpchicken.cn/img/20220510004441.png" width="50%" height="50%"></p>
 <p>其中，红色叉代表观测值，蓝色线代表均值，浅蓝色区域代表95%置信区间。</p>
 <h2 id="贝叶斯优化原理">贝叶斯优化原理</h2>
 <h4 id="基本过程">基本过程</h4>
@@ -455,6 +457,86 @@ class="math inline">\(N\)</span>个解中的极大值作为最优解。</p>
 <p>采集函数的选择有很多种，最常用的是期望改进（Expected
 Improvement，EI),下一节介绍下EI的原理。</p>
 <h4 id="采集函数">采集函数</h4>
+<p>假设已经搜索了n个点，这些点中的函数极大值记为</p>
+<p><span class="math display">\[f_{n}^{*} =
+max(f(x_{1},...,f(x_{n}))\]</span></p>
+<p>考虑下一个搜索点，计算该点处的函数值<span
+class="math inline">\(f(x)\)</span>，如果<span
+class="math inline">\(f(x)&gt;=f_{n}^{*}\)</span>，则这<span
+class="math inline">\(n+1\)</span>个点处的函数极大值为<span
+class="math inline">\(f(x)\)</span>，否则为<span
+class="math inline">\(f_{n}^{*}\)</span></p>
+<p>加入这个新的点后，函数值的改进可以记为</p>
+<p><span class="math display">\[e^{+} = max(0, f(x) -
+f_{n}^{*})\]</span></p>
+<p>我们的目标是找到使得上面的改进值最大的<span
+class="math inline">\(x\)</span>，但是该点的函数值在我们找到<span
+class="math inline">\(x\)</span>是多少前又是未知的，幸运的是我们知道<span
+class="math inline">\(f(x)\)</span>的概率分布，因此我们可以计算在所有x处的改进值的数学期望，然后选择期望最大的<span
+class="math inline">\(x\)</span>作为下一个搜索点。定义期望改进（EI）函数如下：</p>
+<p><span class="math display">\[EI_{n}(x) = E_{n}[max(0, f(x) -
+f_{n}^{*})]\]</span></p>
+<p>令<span class="math inline">\(z=f(x)\)</span>，则有：</p>
+<p><span class="math display">\[\begin{aligned}
+\mathrm{EI}_{n}(\mathbf{x}) &amp;=\int_{-\infty}^{+\infty}\left (max(0,
+z-f_{n}^{*})\right) \frac{1}{\sqrt{2 \pi} \sigma} \exp
+\left(-\frac{(z-\mu)^{2}}{2 \sigma^{2}}\right) d z \\
+&amp;=\int_{f_{n}^{*}}^{+\infty}\left(z-f_{n}^{*}\right)
+\frac{1}{\sqrt{2 \pi} \sigma} \exp \left(-\frac{(z-\mu)^{2}}{2
+\sigma^{2}}\right) d z
+\end{aligned}\]</span></p>
+<p>换元法，得到：</p>
+<p><span class="math display">\[\\
+\begin{array}{c}
+\int_{f_{n}^{*}}^{+\infty}\left(z-f_{n}^{*}\right) \frac{1}{\sqrt{2 \pi}
+\sigma} \exp \left(-\frac{(z-\mu)^{2}}{2 \sigma^{2}}\right) d z
+\\
+=\left(\mu-f_{n}^{*}\right)\left(1-\Phi\left(\left(f_{n}^{*}-\mu\right)
+/ \sigma\right)\right)+\sigma \varphi\left(\left(f_{n}^{*}-\mu\right) /
+\sigma\right)
+\end{array}\]</span></p>
+<p>其中，<span
+class="math inline">\(\varphi(x)\)</span>是标准正态分布的概率密度函数，<span
+class="math inline">\(\phi(x)\)</span>是是标准正态分布的分布函数</p>
+<p>我们的目标是求EI的极值获取下一个采样点，即</p>
+<p><span class="math display">\[x_{n+1} = argmax EI_{n}(x)\]</span></p>
+<p>现在目标函数已知，且能得到目标函数的一阶导数和二阶导数，可以通过梯度下降法或L-BFGS求解极值，这里不再展开叙述</p>
+<h2 id="贝叶斯优化应用">贝叶斯优化应用</h2>
+<p>BO有许多开源的实现，scikit-optimize 以及 参考资料4 <a
+target="_blank" rel="noopener" href="https://github.com/fmfn/BayesianOptimization">BayesianOptimization</a>都封装了BO，这里我们采用参考资料4中封装的BO进行演示。</p>
+<ol type="1">
+<li>直接用pip安装BayesianOptimization</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install bayesian-optimization</span><br></pre></td></tr></table></figure>
+<ol start="2" type="1">
+<li>定义黑盒函数</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">black_box_function</span>(<span class="params">x, y</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    x,y 均是待调优参数</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">return</span> -x ** <span class="number">2</span> - (y - <span class="number">1</span>) ** <span class="number">2</span> + <span class="number">1</span>   </span><br></pre></td></tr></table></figure>
+<ol start="3" type="1">
+<li>初始化BO</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> bayes_opt <span class="keyword">import</span> BayesianOptimization</span><br><span class="line"></span><br><span class="line">pbounds = &#123;<span class="string">&#x27;x&#x27;</span>: (<span class="number">2</span>, <span class="number">4</span>), <span class="string">&#x27;y&#x27;</span>: (-<span class="number">3</span>, <span class="number">3</span>)&#125;      <span class="comment"># 设定x, y 调参范围</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 初始化bo</span></span><br><span class="line">optimizer = BayesianOptimization(</span><br><span class="line">    f=black_box_function,</span><br><span class="line">    pbounds=pbounds,</span><br><span class="line">    random_state=<span class="number">1</span>,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<ol start="4" type="1">
+<li>进行迭代</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">optimizer.maximize(</span><br><span class="line">    init_points=<span class="number">2</span>,          <span class="comment"># 初始解个数</span></span><br><span class="line">    n_iter=<span class="number">20</span>,               <span class="comment"># 迭代次数</span></span><br><span class="line">)</span><br><span class="line"><span class="built_in">print</span>(optimizer.<span class="built_in">max</span>)       <span class="comment"># 输出最大值及对应的参数组合</span></span><br></pre></td></tr></table></figure>
+<p>输出：</p>
+<p><img src="https://images.bumpchicken.cn/img/20220511172849.png" width="80%" height="80%"></p>
+<p>函数<span class="math inline">\(f(x,y) = -x^{2} - (y-1)^{2} +
+1\)</span>，当<span class="math inline">\(x\in[2,4]\)</span>，<span
+class="math inline">\(y\in[-3,3]\)</span>时，很显然，当<span
+class="math inline">\(x=2,y=1\)</span>时能取到最大值，BO给出的解已经相当接近最优解</p>
+<p>运行了多次，BO给出的解非常稳健，如下所示：</p>
+<p><img src="https://images.bumpchicken.cn/img/20220511173250.png"></p>
+<h2 id="参考资料">参考资料</h2>
+<ol type="1">
+<li><p>《机器学习 原理、算法与应用》 雷明著</p></li>
+<li><p>Frazier P I. A tutorial on bayesian optimization[J]. arXiv
+preprint arXiv:1807.02811, 2018.</p></li>
+<li><p>https://github.com/krasserm/bayesian-machine-learning</p></li>
+<li><p>https://github.com/fmfn/BayesianOptimization</p></li>
+<li><p>https://github.com/scikit-optimize/scikit-optimize</p></li>
+</ol>
 
     </div>
 
@@ -536,7 +618,7 @@ Improvement，EI),下一节介绍下EI的原理。</p>
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%BB%91%E7%9B%92%E4%BC%98%E5%8C%96%E9%97%AE%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">黑盒优化问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%90%86%E8%AE%BA%E5%87%86%E5%A4%87"><span class="nav-number">2.</span> <span class="nav-text">理论准备</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AB%98%E6%96%AF%E8%BF%87%E7%A8%8B"><span class="nav-number">2.1.</span> <span class="nav-text">高斯过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AB%98%E6%96%AF%E8%BF%87%E7%A8%8B%E5%9B%9E%E5%BD%92"><span class="nav-number">2.2.</span> <span class="nav-text">高斯过程回归</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gpr%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.3.</span> <span class="nav-text">GPR代码实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B4%9D%E5%8F%B6%E6%96%AF%E4%BC%98%E5%8C%96%E5%8E%9F%E7%90%86"><span class="nav-number">3.</span> <span class="nav-text">贝叶斯优化原理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E8%BF%87%E7%A8%8B"><span class="nav-number">3.0.1.</span> <span class="nav-text">基本过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%87%87%E9%9B%86%E5%87%BD%E6%95%B0"><span class="nav-number">3.0.2.</span> <span class="nav-text">采集函数</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%BB%91%E7%9B%92%E4%BC%98%E5%8C%96%E9%97%AE%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">黑盒优化问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%90%86%E8%AE%BA%E5%87%86%E5%A4%87"><span class="nav-number">2.</span> <span class="nav-text">理论准备</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AB%98%E6%96%AF%E8%BF%87%E7%A8%8B"><span class="nav-number">2.1.</span> <span class="nav-text">高斯过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%AB%98%E6%96%AF%E8%BF%87%E7%A8%8B%E5%9B%9E%E5%BD%92"><span class="nav-number">2.2.</span> <span class="nav-text">高斯过程回归</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gpr%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.3.</span> <span class="nav-text">GPR代码实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B4%9D%E5%8F%B6%E6%96%AF%E4%BC%98%E5%8C%96%E5%8E%9F%E7%90%86"><span class="nav-number">3.</span> <span class="nav-text">贝叶斯优化原理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E8%BF%87%E7%A8%8B"><span class="nav-number">3.0.1.</span> <span class="nav-text">基本过程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%87%87%E9%9B%86%E5%87%BD%E6%95%B0"><span class="nav-number">3.0.2.</span> <span class="nav-text">采集函数</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B4%9D%E5%8F%B6%E6%96%AF%E4%BC%98%E5%8C%96%E5%BA%94%E7%94%A8"><span class="nav-number">4.</span> <span class="nav-text">贝叶斯优化应用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">5.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
