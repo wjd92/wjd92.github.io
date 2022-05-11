@@ -34,7 +34,7 @@
 <meta property="og:image" content="https://images.bumpchicken.cn/img/20220511221306.png">
 <meta property="og:image" content="https://images.bumpchicken.cn/img/201485427.gif">
 <meta property="article:published_time" content="2019-09-25T16:09:00.000Z">
-<meta property="article:modified_time" content="2022-05-11T14:24:22.278Z">
+<meta property="article:modified_time" content="2022-05-11T14:27:02.856Z">
 <meta property="article:author" content="wjd">
 <meta property="article:tag" content="分类">
 <meta name="twitter:card" content="summary">
@@ -232,7 +232,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-05-11 22:24:22" itemprop="dateModified" datetime="2022-05-11T22:24:22+08:00">2022-05-11</time>
+                <time title="修改时间：2022-05-11 22:27:02" itemprop="dateModified" datetime="2022-05-11T22:27:02+08:00">2022-05-11</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -285,7 +285,8 @@ x+b=0\)</span>距离为：</p>
 x+b\right|}{\|w\|}\]</span></p>
 <p>其中，<span class="math inline">\(\|w\|=\sqrt{w_{1}^{2}+\ldots
 w_{n}^{2}}\)</span></p>
-<p>假定分割超平面能将样本点__准确__分为两类，设支持向量到最大间隔超平面的距离为d，则其他向量到最大间隔超平面的距离大于d。于是有:</p>
+<p>假定分割超平面能将样本点 <strong>准确</strong>
+分为两类，设支持向量到最大间隔超平面的距离为d，则其他向量到最大间隔超平面的距离大于d。于是有:</p>
 <p><span class="math display">\[\left\{\begin{array}{l}{\frac{w^{T}
 x+b}{\|w\|} \geq d \quad y_{i}=1} \\ {\frac{w^{T} x+b}{\|w\|} \leq-d
 \quad y_{i}=-1}\end{array}\right.\]</span></p>
@@ -543,16 +544,15 @@ x_{j}\right)=\left(x_{i}^{T} x_{j}\right)^{d}\]</span></p></li>
 </ul>
 <p>理论上高斯核函数可以将数据映射到无限维。</p>
 <h2 id="总结">总结</h2>
-<p>SVM作为一种经典的机器学习分类方法，具有以下优点:</p>
-<p>1.采用核技巧之后，可以处理非线性分类/回归任务</p>
-<p>2.能找出对任务至关重要的关键样本（即支持向量)</p>
-<p>3.最终决策函数只由少数的支持向量所确定，计算的复杂性取决于支持向量的数目，而不是样本空间的维数，这在某种意义上避免了“维数灾难”</p>
-<p>同时，也具有以下缺点：</p>
-<p>1.训练时间长。当采用 SMO
+<p>SVM作为一种经典的机器学习分类方法，具有以下优点:
+1.采用核技巧之后，可以处理非线性分类/回归任务
+2.能找出对任务至关重要的关键样本（即支持向量)
+3.最终决策函数只由少数的支持向量所确定，计算的复杂性取决于支持向量的数目，而不是样本空间的维数，这在某种意义上避免了“维数灾难”</p>
+<p>同时，也具有以下缺点： 1.训练时间长。当采用 SMO
 算法时，由于每次都需要挑选一对参数，因此时间复杂度为 O(N2)，其中 N
-为训练样本的数量</p>
-<p>2.当采用核技巧时，如果需要存储核矩阵，则空间复杂度为 O(N2)</p>
-<p>3.模型预测时，预测时间与支持向量的个数成正比。当支持向量的数量较大时，预测计算复杂度较高</p>
+为训练样本的数量 2.当采用核技巧时，如果需要存储核矩阵，则空间复杂度为
+O(N2)
+3.模型预测时，预测时间与支持向量的个数成正比。当支持向量的数量较大时，预测计算复杂度较高</p>
 <h2 id="参考资料">参考资料</h2>
 <ol type="1">
 <li><p>《机器学习》 周志华</p></li>
