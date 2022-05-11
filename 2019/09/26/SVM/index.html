@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.bumpchicken.cn","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Support Vector Machine（支持向量机），是一种非常经典的机器学习分类方法。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入浅出SVM">
+<meta property="og:url" content="http://www.bumpchicken.cn/2019/09/26/SVM/index.html">
+<meta property="og:site_name" content="BOC&#39;s warehouse">
+<meta property="og:description" content="Support Vector Machine（支持向量机），是一种非常经典的机器学习分类方法。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://images.bumpchicken.cn/img/20220511220448.png">
+<meta property="og:image" content="https://images.bumpchicken.cn/img/20220511220958.png">
+<meta property="og:image" content="https://images.bumpchicken.cn/img/20220511221109.png">
+<meta property="og:image" content="https://images.bumpchicken.cn/img/20220511221210.png">
+<meta property="og:image" content="https://images.bumpchicken.cn/img/20220511221306.png">
+<meta property="og:image" content="https://images.bumpchicken.cn/img/201485427.gif">
+<meta property="article:published_time" content="2019-09-25T16:09:00.000Z">
+<meta property="article:modified_time" content="2022-05-11T14:24:22.278Z">
+<meta property="article:author" content="wjd">
+<meta property="article:tag" content="分类">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://images.bumpchicken.cn/img/20220511220448.png">
+
+<link rel="canonical" href="http://www.bumpchicken.cn/2019/09/26/SVM/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>深入浅出SVM | BOC's warehouse</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="BOC's warehouse" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">BOC's warehouse</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.bumpchicken.cn/2019/09/26/SVM/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="wjd">
+      <meta itemprop="description" content="弱者的反击">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BOC's warehouse">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          深入浅出SVM
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-09-26 00:09:00" itemprop="dateCreated datePublished" datetime="2019-09-26T00:09:00+08:00">2019-09-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-05-11 22:24:22" itemprop="dateModified" datetime="2022-05-11T22:24:22+08:00">2022-05-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><img src="https://images.bumpchicken.cn/img/20220511220448.png" width="60%">
+Support Vector Machine（支持向量机），是一种非常经典的机器学习分类方法。
+<span id="more"></span></p>
+<h2 id="svm基本原理">SVM基本原理</h2>
+<p>Support Vector
+Machine（支持向量机），是一种非常经典的机器学习分类方法。它有严格的数学理论支持，可解释性强，不依靠统计方法，并且利用核函数技巧能有效解决一些线性不可分的场景。</p>
+<p>给定样本集：<span
+class="math inline">\(D=\left\{\left(\boldsymbol{x}_{1},
+y_{1}\right),\left(\boldsymbol{x}_{2}, y_{2}\right),
+\ldots,\left(\boldsymbol{x}_{m}, y_{m}\right)\right\}, y_{i}
+\in\{-1,+1\}\)</span>，如下所示，假设左上方的点为正样本，右下方的点为负样本</p>
+<p><img src="https://images.bumpchicken.cn/img/20220511220958.png" width="60%"></p>
+<p>寻找一个最优的分类面，使得依赖这个分类面产生的分类结果最具鲁棒性，体现在图上就是分类样本离这个分类平面尽可能远，具有最大的间隔。将这个分类的平面称为<strong>最大间隔超平面</strong>，离这个最大间隔超平面最近的点称之为<strong>支持向量（Support
+Vector)，分类超平面的构建只与这些少数的点有关，这也是为什么它叫作支持向量机的原因。</strong></p>
+<p><img src="https://images.bumpchicken.cn/img/20220511221109.png" width="60%"></p>
+<h2 id="svm最优化问题">SVM最优化问题</h2>
+<p>SVM
+目的是找到各类样本点到超平面的距离最远，也就是找到最大间隔超平面。任意超平面可以用下面这个线性方程来描述：</p>
+<p><span class="math display">\[\boldsymbol{w}^{\mathrm{T}}
+\boldsymbol{x}+b=0\]</span></p>
+<p>我们知道，二维空间点(x, y) 到直线 Ax+By+C=0的距离公式为：</p>
+<p><span class="math display">\[\frac{|A x+B
+y+C|}{\sqrt{A^{2}+B^{2}}}\]</span></p>
+<p>扩展到n维空间，点<span class="math inline">\(x=\left(x_{1}, x_{2}
+\dots x_{n}\right)\)</span>到<span class="math inline">\(w^{T}
+x+b=0\)</span>距离为：</p>
+<p><span class="math display">\[\frac{\left|w^{T}
+x+b\right|}{\|w\|}\]</span></p>
+<p>其中，<span class="math inline">\(\|w\|=\sqrt{w_{1}^{2}+\ldots
+w_{n}^{2}}\)</span></p>
+<p>假定分割超平面能将样本点__准确__分为两类，设支持向量到最大间隔超平面的距离为d，则其他向量到最大间隔超平面的距离大于d。于是有:</p>
+<p><span class="math display">\[\left\{\begin{array}{l}{\frac{w^{T}
+x+b}{\|w\|} \geq d \quad y_{i}=1} \\ {\frac{w^{T} x+b}{\|w\|} \leq-d
+\quad y_{i}=-1}\end{array}\right.\]</span></p>
+<p>因为<span class="math inline">\(\|w\| d\)</span>
+是正数，其对目标函数优化无影响，这里令其为1，因此上式不等式组可简化为:</p>
+<p><span class="math display">\[\left\{\begin{array}{l}{w^{T} x+b \geq 1
+\quad y_{i}=1} \\ {w^{T} x+b \leq-1 \quad
+y_{i}=-1}\end{array}\right.\]</span></p>
+<p>合并两个不等式，得到：<span class="math inline">\(y_{i}\left(w^{T}
+x+b\right) \geq 1\)</span></p>
+<p>这里，我们再来看关于超平面和支持向量的图解：</p>
+<p><img src="https://images.bumpchicken.cn/img/20220511221210.png" width="60%"></p>
+<p>支持向量到最大间隔超平面的距离为：</p>
+<p><span class="math display">\[d=\frac{\left|w^{T}
+x+b\right|}{\|w\|}\]</span></p>
+<p>最大化这个距离：</p>
+<p><span class="math display">\[\max 2 * \frac{\left|w^{T}
+x+b\right|}{\|w\|}\]</span></p>
+<p>对于确定的样本集来说，<span class="math inline">\(\left|w^{T}
+x+b\right|\)</span>是个常量，因此目标函数变为：<span
+class="math inline">\(\max \frac{2}{\|w\|}\)</span>，即<span
+class="math inline">\(\min \frac{1}{2}\|w\|\)</span></p>
+<p>为了方便计算，去除根号，目标函数转化为：<span
+class="math inline">\(\min \frac{1}{2}\|w\|^{2}\)</span></p>
+<p>因此得到SVM的优化问题：</p>
+<p><span class="math display">\[\min \frac{1}{2}\|w\|^{2} \]</span></p>
+<p><span class="math display">\[{s.t.}\quad y_{i}\quad\left(w^{T}
+x_{i}+b\right) \geq 1\]</span></p>
+<h2 id="kkt条件">KKT条件</h2>
+<p>上述最优化问题约束条件是不等式。如果是等式约束，可以直接用Lagrange乘数法求解，即对于下述最优化问题</p>
+<p><span class="math display">\[\begin{array}{c}{\min f\left(x_{1},
+x_{2}, \ldots, x_{n}\right)} \\ {\text { s.t. } \quad h_{k}\left(x_{1},
+x_{2}, \ldots, x_{n}\right)=0}\end{array}\]</span></p>
+<p>我们可以构造拉格朗日函数：<span class="math inline">\(L(x,
+\lambda)=f(x)+\sum_{k=1}^{l} \lambda_{k}
+h_{k}(x)\)</span>，然后分别对<span
+class="math inline">\(x\)</span>,<span
+class="math inline">\(\lambda\)</span>求偏导，求得可能的极值点</p>
+<p><span class="math display">\[\left\{\begin{array}{ll}{\frac{\partial
+L}{\partial x_{i}}=0} &amp; {i=1,2, \ldots, n} \\ {\frac{\partial
+L}{\partial \lambda_{k}}=0} &amp; {k=1,2, \ldots,
+l}\end{array}\right.\]</span></p>
+<p>那么对于不等式约束条件，做法是引入一个松弛变量，然后将该松弛变量也视为待优化变量。以SVM优化问题为例：</p>
+<p><span class="math display">\[\begin{aligned} \min f(w) &amp;=\min
+\frac{1}{2}\|w\|^{2} \\ \text {s.t.} &amp; g_{i}(w)=1-y_{i}\left(w^{T}
+x_{i}+b\right) \leq 0 \end{aligned}\]</span></p>
+<p>引入松弛变量 <span
+class="math inline">\(a_{i}^{2}\)</span>，得到新的约束条件: <span
+class="math inline">\(h_{i}\left(w,
+a_{i}\right)=g_{i}(w)+a_{i}^{2}=0\)</span>，将不等式约束变为等式约束，得到新的拉格朗日函数：</p>
+<p><span class="math display">\[\begin{aligned} L(w, \lambda, a)
+&amp;=\frac{1}{2} f(w)+\sum_{i=1}^{n} \lambda_{i} h_{i}(w) \\
+&amp;=\frac{1}{2} f(w)+\sum_{i=1}^{n}
+\lambda_{i}\left[g_{i}(w)+a_{i}^{2}\right] \quad \lambda_{i} \geq 0
+\end{aligned}\]</span></p>
+<p>（<strong>注意到，这里有<span
+class="math inline">\(\lambda_{i}&gt;=0\)</span>，在拉格朗日乘数法中，没有非负的要求，关于这里为何
+<span class="math inline">\(\lambda_{i}&gt;=0\)</span>
+可以通过几何性质来证明，有兴趣的可以查阅相关资料</strong>。）</p>
+<p>根据等式约束条件，有：</p>
+<p><span class="math display">\[\left\{\begin{array}{c}{\frac{\partial
+L}{\partial w_{i}}=\frac{\partial f}{\partial w_{i}}+\sum_{i=1}^{n}
+\lambda_{i} \frac{\partial g_{i}}{\partial w_{i}}=0} \\ {\frac{\partial
+L}{\partial a_{i}}=2 \lambda_{i} a_{i}=0} \\ {\frac{\partial L}{\partial
+\lambda_{i}}=g_{i}(w)+a_{i}^{2}=0} \\ {\lambda_{i} \geq
+0}\end{array}\right.\]</span></p>
+<p>第二个式子，<span class="math inline">\(2\lambda_{i}
+a_{i}=0\)</span>，有两种情况：</p>
+<ol type="1">
+<li><span class="math inline">\(\lambda_{i}\)</span> 为0，<span
+class="math inline">\(a_{i}\)</span>不为0：由于<span
+class="math inline">\(\lambda_{i}\)</span>为0，这时候约束<span
+class="math inline">\(g_{i}(w)\)</span>不起作用，并且<span
+class="math inline">\(g_{i}(w)&lt;0\)</span></li>
+<li><span class="math inline">\(\lambda_{i}\)</span>不为0，<span
+class="math inline">\(a_{i}\)</span>为0：这时<span
+class="math inline">\(g_{i}(w)\)</span>起约束作用，并且<span
+class="math inline">\(g_{i}(w)=0\)</span></li>
+</ol>
+<p>因此，方程组可转换为：</p>
+<p><span class="math display">\[\left\{\begin{aligned} \frac{\partial
+L}{\partial w_{i}} &amp;=\frac{\partial f}{\partial
+w_{i}}+\sum_{j=1}^{n} \lambda_{j} \frac{\partial g_{j}}{\partial
+w_{i}}=0 \\ \lambda_{i} g_{i}(w) &amp;=0 \\ g_{i}(w) &amp; \leq 0 \\
+\lambda_{i} &amp; \geq 0 \end{aligned}\right.\]</span></p>
+<p>以上便是不等式约束优化问题的__KKT(Karush-Kuhn-Tucker)条件__，<span
+class="math inline">\(\lambda_{i}\)</span>称为KKT乘子。从这个方程组可以得到以下讯息：</p>
+<ol type="1">
+<li>对于支持向量 <span class="math inline">\(g_{i}(w)=0\)</span>，<span
+class="math inline">\(\lambda_{i}&gt;0\)</span>即可</li>
+<li>对于非支持向量 <span
+class="math inline">\(g_{i}(w)&lt;0\)</span>，但要求 <span
+class="math inline">\(\lambda_{i}=0\)</span></li>
+</ol>
+<h2 id="求解svm最优化问题">求解SVM最优化问题</h2>
+<p>利用KKT条件，我们可以求解SVM最优化问题：</p>
+<p><span class="math display">\[\min _{w}
+\frac{1}{2}\|w\|^{2}\]</span></p>
+<p><span class="math display">\[\text {s.t. } \quad g_{i}(w, b)=1-y_{i}
+\left(w^{T} x_{i}+b\right) \quad \leq 0, \quad i=1,2, \ldots,
+n\]</span></p>
+<p><strong>Step 1</strong>: 构造拉格朗日函数</p>
+<p><span class="math display">\[\begin{aligned} L(w, b, \lambda)=&amp;
+\frac{1}{2}\|w\|^{2}+\sum_{i=1}^{n} \lambda_{i}\left[1-y_{i}\left(w^{T}
+x_{i}+b\right)\right] \\ &amp; \text {s.t.} \quad \lambda_{i} \geq 0
+\end{aligned}\]</span></p>
+<p>假设目标函数最小值为p, 即<span
+class="math inline">\(\frac{1}{2}\|w\|^{2} = p\)</span>，因为<span
+class="math inline">\(\sum_{i=1}^{n} \lambda_{i}\left[1-y_{i}\left(w^{T}
+x_{i}+b\right)\right] &lt;= 0\)</span>，即<span
+class="math inline">\(L(w, b, \lambda) &lt;=
+p\)</span>，为了找到最优的参数<span
+class="math inline">\(\lambda\)</span>使得<span
+class="math inline">\(L(w, b, \lambda)\)</span>接近p，问题转换为：<span
+class="math inline">\(\max _{\lambda} L(w, b,
+\lambda)\)</span>，即：</p>
+<p><span class="math display">\[\begin{array}{c}{\min _{w} \max
+_{\lambda} L(w, b, \lambda)} \\ {\text { s.t. } \quad \lambda_{i} \geq
+0}\end{array}\]</span></p>
+<p><strong>Step 2</strong>:利用对偶性转换求解问题：</p>
+<p>对偶问题其实就是将：</p>
+<p><span class="math display">\[\begin{array}{c}{\min _{w} \max
+_{\lambda} L(w, b, \lambda)} \\ {\text { s.t. } \quad \lambda_{i} \geq
+0}\end{array}\]</span></p>
+<p>转化为：<span class="math inline">\(\begin{array}{c}{\max _{\lambda}
+\min _{w} L(w, b, \lambda)} \\ {\text { s.t. } \quad \lambda_{i} \geq
+0}\end{array}\)</span></p>
+<p>假设有函数<span class="math inline">\(f\)</span>,我们有：</p>
+<p><span class="math display">\[min \space max f &gt;= max \space min
+f\]</span></p>
+<p>即最大的里面挑出来最小的也要比最小的里面挑出来最大的要大，这是一种
+<strong>弱对偶关系</strong>，而 <strong>强对偶关系</strong>
+是当等号成立时，即：</p>
+<p><span class="math display">\[min \space max f == max \space min
+f\]</span></p>
+<p>当<span
+class="math inline">\(f\)</span>是凸优化问题时，等号成立，而我们之前求的KKT条件是强对偶性的
+<strong>充要条件</strong></p>
+<p>因此，对<span class="math inline">\(\begin{array}{c}{\max _{\lambda}
+\min _{w} L(w, b, \lambda)} \\ {\text { s.t. } \quad \lambda_{i} \geq
+0}\end{array}\)</span>进行求解：</p>
+<p>1）对参数<span class="math inline">\(w\)</span>和<span
+class="math inline">\(b\)</span>求偏导数：</p>
+<p><span class="math display">\[\frac{\partial L}{\partial
+w}=w-\sum_{i=1}^{n} \lambda_{i} x_{i} y_{i}=0\]</span></p>
+<p><span class="math display">\[\frac{\partial L}{\partial
+b}=\sum_{i=1}^{n} \lambda_{i} y_{i}=0\]</span></p>
+<p>得到：</p>
+<p><span class="math display">\[\sum_{i=1}^{n} \lambda_{i} x_{i}
+y_{i}=w\]</span></p>
+<p><span class="math display">\[\sum_{i=1}^{n} \lambda_{i}
+y_{i}=0\]</span></p>
+<p>2）将1）中求导结果代回 <span class="math inline">\(L(w, b,
+\lambda)\)</span>中，得到：</p>
+<p><span class="math display">\[\begin{aligned} L(w, b, \lambda)
+&amp;=\frac{1}{2} \sum_{i=1}^{n} \sum_{j=1}^{n} \lambda_{i} \lambda_{j}
+y_{i} y_{j}\left(x_{i} \cdot x_{j}\right)+\sum_{i=1}^{n}
+\lambda_{i}-\sum_{i=1}^{n} \lambda_{i} y_{i}\left(\sum_{j=1}^{n}
+\lambda_{j} y_{j}\left(x_{i} \cdot x_{j}\right)+b\right) \\
+&amp;=\frac{1}{2} \sum_{i=1}^{n} \sum_{j=1}^{n} \lambda_{i} \lambda_{j}
+y_{i} y_{j}\left(x_{i} \cdot x_{j}\right)+\sum_{i=1}^{n}
+\lambda_{i}-\sum_{i=1}^{n} \sum_{j=1}^{n} \lambda_{i} \lambda_{j} y_{i}
+y_{j}\left(x_{i} \cdot x_{j}\right)-\sum_{i=1}^{n} \lambda_{i} y_{i} b
+\\ &amp;=\sum_{j=1}^{n} \lambda_{i}-\frac{1}{2} \sum_{i=1}^{n}
+\sum_{j=1}^{n} \lambda_{i} \lambda_{j} y_{i} y_{j}\left(x_{i} \cdot
+x_{j}\right) \end{aligned}\]</span></p>
+<p>3）利用SMO（Sequential Minimal Optimization）求解</p>
+<p><span class="math inline">\(\max _{\lambda}\left[\sum_{j=1}^{n}
+\lambda_{i}-\frac{1}{2} \sum_{i=1}^{n} \sum_{j=1}^{n} \lambda_{i}
+\lambda_{j} y_{i} y_{j}\left(x_{i} \cdot x_{j}\right)\right]\)</span>
+<span class="math inline">\(\text { s.t. } \sum_{i=1}^{n} \lambda_{i}
+y_{i}=0 \quad \lambda_{i} \geq 0\)</span></p>
+<p>这是一个二次规划问题，问题规模正比于训练样本数，我们常用
+SMO算法求解。</p>
+<p>SMO的思路是：先固定除<span
+class="math inline">\(\lambda_{i}\)</span>之外的参数，然后求<span
+class="math inline">\(\lambda_{i}\)</span>上的极值。但是我们这里有约束条件<span
+class="math inline">\(\sum_{i=1}^{n} \lambda_{i}
+y_{i}=0\)</span>，如果固定<span
+class="math inline">\(\lambda_{i}\)</span>之外的参数，<span
+class="math inline">\(\lambda_{i}\)</span>可直接由其他参数推导出来。因此这里SMO一次优化两个参数，具体步骤为：</p>
+<ul>
+<li><p>选择两个需要更新的参数<span
+class="math inline">\(\lambda_{i}\)</span>和<span
+class="math inline">\(\lambda_{j}\)</span>，固定其他参数，于是约束变为：</p>
+<p><span class="math inline">\(\lambda_{i} y_{i}+\lambda_{j} y_{j}=c
+\quad \lambda_{i} \geq 0, \lambda_{j} \geq 0\)</span>，其中，<span
+class="math inline">\(c=-\sum_{k \neq i, j} \lambda_{k}
+y_{k}\)</span></p>
+<p>得到：<span class="math inline">\(\lambda_{j}=\frac{c-\lambda_{i}
+y_{i}}{y_{j}}\)</span></p>
+<p>也就是说我们可以用<span
+class="math inline">\(\lambda_{i}\)</span>的表达式代替<span
+class="math inline">\(\lambda_{j}\)</span>。这样就相当于把目标问题转化成了仅有一个约束条件的最优化问题，仅有的约束是<span
+class="math inline">\(\lambda_{i}&gt;=0\)</span></p></li>
+<li><p>对于仅有一个约束条件的最优化问题，我们完全可以在<span
+class="math inline">\(\lambda_{i}\)</span>上对优化目标求偏导，令导数为零，从而求出变量值<span
+class="math inline">\(\lambda_{i}\)</span>的极值<span
+class="math inline">\(\lambda_{i_{new}}\)</span>，然后通过<span
+class="math inline">\(\lambda_{i_{new}}\)</span>求出<span
+class="math inline">\(\lambda_{j_{new}}\)</span></p></li>
+<li><p>多次迭代直至收敛</p></li>
+</ul>
+<p>4）根据 <span class="math inline">\({\sum_{i=1}^{n} \lambda_{i} x_{i}
+y_{i}=w}\)</span>求得<span class="math inline">\(w\)</span></p>
+<p>5）求偏移项<span class="math inline">\(b\)</span></p>
+<p>对于<span class="math inline">\(\lambda_{i}&gt;0\)</span>，<span
+class="math inline">\(g_{i}(w)=0\)</span>，满足这个条件的点均为支持向量，可以取任一支持向量，带入<span
+class="math inline">\(y_{s}\left(w
+x_{s}+b\right)=1\)</span>，即可求得<span
+class="math inline">\(b\)</span></p>
+<p>或者采取更为鲁棒的做法，取所有支持向量各计算出一个<span
+class="math inline">\(b\)</span>，然后取均值，即按下式求取：</p>
+<p><span class="math display">\[b=\frac{1}{|S|} \sum_{s \in
+S}\left(y_{s}-w x_{s}\right)\]</span></p>
+<p>6）构造分类超平面：<span class="math inline">\(w^{T}
+x+b=0\)</span></p>
+<p>分类决策函数：<span
+class="math inline">\(f(x)=\operatorname{sign}\left(w^{T}
+x+b\right)\)</span></p>
+<p>其中，<span class="math inline">\(sign(x)\)</span>是阶跃函数：</p>
+<p><span
+class="math display">\[\operatorname{sign}(x)=\left\{\begin{array}{rl}{-1}
+&amp; {x&lt;0} \\ {0} &amp; {x=0} \\ {1} &amp;
+{x&gt;0}\end{array}\right.\]</span></p>
+<h2 id="线性不可分场景">线性不可分场景</h2>
+<p>以上我们讨论的都是线性可分的情况，实际场景中，通常遇到的数据分布都是线性不可分的。如以下场景，此场景下，求得的分类面损失将会超出我们的容忍范围。</p>
+<p><img src="https://images.bumpchicken.cn/img/20220511221306.png" width="60%"></p>
+<p><strong>SVM的做法是将二维线性不可分样本映射到高维空间中，让样本点在高维空间线性可分</strong>，比如下列动图演示的做法</p>
+<p><img src="https://images.bumpchicken.cn/img/201485427.gif" width="80%"></p>
+<p>对于在有限维度向量空间中线性不可分的样本，我们将其映射到更高维度的向量空间里，再通过间隔最大化的方式，学习得到的支持向量机称之为<strong>非线性
+SVM。</strong></p>
+<p>我们用 x 表示原来的样本点，用 <span
+class="math inline">\(\kappa(x)\)</span>表示 <span
+class="math inline">\(x\)</span>
+映射到特征新的特征空间后到新向量。那么优化问题可以表示为：</p>
+<p><span class="math display">\[\max _{\boldsymbol{\lambda}}
+\sum_{i=1}^{m} \lambda{i}-\frac{1}{2} \sum_{i=1}^{m} \sum_{j=1}^{m}
+\lambda{i} \lambda{j} y_{i} y_{j} \kappa\left(\boldsymbol{x}_{i},
+\boldsymbol{x}_{j}\right)\]</span></p>
+<p><span class="math display">\[\text {s.t.} \quad \sum_{i=1}^{n}
+\lambda_{i} y_{i}=0, \quad \lambda_{i} \geq 0\]</span></p>
+<p>我们常用的核函数有：</p>
+<ul>
+<li><p>线性核函数</p>
+<p><span class="math display">\[k\left(x_{i}, x_{j}\right)=x_{i}^{T}
+x_{j}\]</span></p></li>
+<li><p>多项式核函数</p>
+<p><span class="math display">\[k\left(x_{i},
+x_{j}\right)=\left(x_{i}^{T} x_{j}\right)^{d}\]</span></p></li>
+<li><p>高斯核函数</p>
+<p><span class="math display">\[k\left(x_{i}, x_{j}\right)=\exp
+\left(-\frac{\left\|x_{i}-x_{j}\right\|}{2
+\delta^{2}}\right)\]</span></p></li>
+</ul>
+<p>理论上高斯核函数可以将数据映射到无限维。</p>
+<h2 id="总结">总结</h2>
+<p>SVM作为一种经典的机器学习分类方法，具有以下优点:</p>
+<p>1.采用核技巧之后，可以处理非线性分类/回归任务</p>
+<p>2.能找出对任务至关重要的关键样本（即支持向量)</p>
+<p>3.最终决策函数只由少数的支持向量所确定，计算的复杂性取决于支持向量的数目，而不是样本空间的维数，这在某种意义上避免了“维数灾难”</p>
+<p>同时，也具有以下缺点：</p>
+<p>1.训练时间长。当采用 SMO
+算法时，由于每次都需要挑选一对参数，因此时间复杂度为 O(N2)，其中 N
+为训练样本的数量</p>
+<p>2.当采用核技巧时，如果需要存储核矩阵，则空间复杂度为 O(N2)</p>
+<p>3.模型预测时，预测时间与支持向量的个数成正比。当支持向量的数量较大时，预测计算复杂度较高</p>
+<h2 id="参考资料">参考资料</h2>
+<ol type="1">
+<li><p>《机器学习》 周志华</p></li>
+<li><p><a
+target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/26514613">浅谈最优化问题中的KKT条件</a></p></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%88%86%E7%B1%BB/" rel="tag"># 分类</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/04/08/DTW/" rel="prev" title="动态归整距离（DTW）详解">
+      <i class="fa fa-chevron-left"></i> 动态归整距离（DTW）详解
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/05/25/IsolationTree/" rel="next" title="孤立森林原理详解">
+      孤立森林原理详解 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#svm%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86"><span class="nav-number">1.</span> <span class="nav-text">SVM基本原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#svm%E6%9C%80%E4%BC%98%E5%8C%96%E9%97%AE%E9%A2%98"><span class="nav-number">2.</span> <span class="nav-text">SVM最优化问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#kkt%E6%9D%A1%E4%BB%B6"><span class="nav-number">3.</span> <span class="nav-text">KKT条件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B1%82%E8%A7%A3svm%E6%9C%80%E4%BC%98%E5%8C%96%E9%97%AE%E9%A2%98"><span class="nav-number">4.</span> <span class="nav-text">求解SVM最优化问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BA%BF%E6%80%A7%E4%B8%8D%E5%8F%AF%E5%88%86%E5%9C%BA%E6%99%AF"><span class="nav-number">5.</span> <span class="nav-text">线性不可分场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">7.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">wjd</p>
+  <div class="site-description" itemprop="description">弱者的反击</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">沪ICP备2022012091号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wjd</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '7d18fb7cc60b381d58b2',
+      clientSecret: '779d68590ffb7283ddca9f654a481a6398509c73',
+      repo        : 'wjd92.github.io',
+      owner       : 'wjd92',
+      admin       : ['wjd92'],
+      id          : 'f6071acb47930d17f3da642f650c4b2d',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>
