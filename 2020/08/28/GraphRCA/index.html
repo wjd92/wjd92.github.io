@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"www.bumpchicken.cn","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="该论文是Universidad Politécnica de Madrid（马德里技术大学）和CA科技公司（现被思科收购）合作于2020年发表在Journal of Systems and Software上的一篇论文。题目是《Graph-based Root Cause Analysis for Service-Oriented and Microservice Architectures》&#x2F;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="面向服务及微服务架构基于图论的根因分析">
+<meta property="og:url" content="http://www.bumpchicken.cn/2020/08/28/GraphRCA/index.html">
+<meta property="og:site_name" content="BOC&#39;s warehouse">
+<meta property="og:description" content="该论文是Universidad Politécnica de Madrid（马德里技术大学）和CA科技公司（现被思科收购）合作于2020年发表在Journal of Systems and Software上的一篇论文。题目是《Graph-based Root Cause Analysis for Service-Oriented and Microservice Architectures》&#x2F;">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://images.bumpchicken.cn/img/20220512202347.png">
+<meta property="og:image" content="https://images.bumpchicken.cn/img/20220512202451.png">
+<meta property="og:image" content="https://images.bumpchicken.cn/img/20220512202538.png">
+<meta property="og:image" content="https://images.bumpchicken.cn/img/20220512202638.png">
+<meta property="og:image" content="https://images.bumpchicken.cn/img/20220512202727.png">
+<meta property="og:image" content="https://images.bumpchicken.cn/img/20220512202838.png">
+<meta property="og:image" content="https://images.bumpchicken.cn/img/20220512203041.png">
+<meta property="article:published_time" content="2020-08-28T13:41:00.000Z">
+<meta property="article:modified_time" content="2022-05-12T12:36:32.704Z">
+<meta property="article:author" content="wjd">
+<meta property="article:tag" content="根因定位">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://images.bumpchicken.cn/img/20220512202347.png">
+
+<link rel="canonical" href="http://www.bumpchicken.cn/2020/08/28/GraphRCA/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>面向服务及微服务架构基于图论的根因分析 | BOC's warehouse</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="BOC's warehouse" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">BOC's warehouse</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://www.bumpchicken.cn/2020/08/28/GraphRCA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="wjd">
+      <meta itemprop="description" content="弱者的反击">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="BOC's warehouse">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          面向服务及微服务架构基于图论的根因分析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-08-28 21:41:00" itemprop="dateCreated datePublished" datetime="2020-08-28T21:41:00+08:00">2020-08-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-05-12 20:36:32" itemprop="dateModified" datetime="2022-05-12T20:36:32+08:00">2022-05-12</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index"><span itemprop="name">论文阅读笔记</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>该论文是Universidad Politécnica de
+Madrid（马德里技术大学）和CA科技公司（现被思科收购）合作于2020年发表在Journal
+of Systems and Software上的一篇论文。题目是《Graph-based Root Cause
+Analysis for Service-Oriented and Microservice Architectures》/
+《面向服务及微服务架构基于图论的根因分析》</p>
+<span id="more"></span>
+<h2 id="整体架构">整体架构</h2>
+<p>论文首先定义一个普遍的网络服务场景，在这个场景中包含负载均衡（load
+bancer），比如HAproxy，包含数个web服务，比如WordPress，包含中间件存储，比如MySQL。每个element运行在各自集群独立的容器中，容器之间能够相互<strong>通信</strong>。每个element都是一个节点，节点会包含一些属性（attr），这些属性可能是一些数值型的指标信息，比如cpu
+usage,
+DiskIO，或者是一些类别信息，比如说是一个标签信息用来指示当前节点是容器还是物理机，当前服务是前端还是后端服务等等。如下图所示</p>
+<p><img src="https://images.bumpchicken.cn/img/20220512202347.png" width="80%"></p>
+<p>显然，上述拓扑图中，如果有某个节点发生异常会产生链式反应。比如若load
+balancer发生了异常，通常会导致某个服务的入口流量减少。论文提出了一种基于图论的根因定位系统，如下图所示：</p>
+<p><img src="https://images.bumpchicken.cn/img/20220512202451.png" width="80%"></p>
+<h2 id="系统图生成模块system-graph-module">系统图生成模块（System graph
+module)</h2>
+<p>该模块的职责是将系统中所有指标、网络活动，日志和异常情况等在给定的时间窗口（例如15s）用结构化的图形表示，相当于给某个系统的当前状态作了一个快照（snapshot）。这个时间窗口是可以调整的，可以根据系统的变更率、监控频率进行调整。时间窗口不宜设置得过大或过小，较大的时间窗口会导致指标信息粗略，无法检测到某些异常；窗口设置得过小则会导致收集到大量噪音数据，无法得到有用的信息。</p>
+<p>图的构建过程，论文在第五部分会详细介绍，这里先给出了图元素的组成部分：</p>
+<ul>
+<li>节点（Nodes）</li>
+</ul>
+<p>节点可以用来表示任意一个容器，主机或者和系统交互的任意元素。每个节点会包含多个属性。</p>
+<ul>
+<li>边（Edges)</li>
+</ul>
+<p>边表示系统中各个元素之间的网络通信，例如tcp连接或http请求。还可以用来表示逻辑连接，例如容器与托管该容器之间的关系。与节点相同，边具备不同类型的多个属性。</p>
+<ul>
+<li>属性（Attr）</li>
+</ul>
+<p>属性从收集的指标、日志和异常中获得，包含以下几种类型：</p>
+<ol type="1">
+<li>数值型：可以包含离散或者连续时间范围内的指标值，比如一段时间内的cpu
+usage。</li>
+<li>类别型：特定类别的标签信息。比如特定容器内的Docker镜像（比如HAproxy
+v1.8，WordPress V4.9)</li>
+<li>本体类型（Ontological):
+此类型用来表示概念的层级结构，如下图所示，该类型的属性用来描述语义上相同但是涉及不同元素的问题。比如，在负载均衡场景中，Nginx实例和WordPress实例是等同的，因为他们都是前端服务器。</li>
+</ol>
+<p><img src="https://images.bumpchicken.cn/img/20220512202538.png" width="50%"></p>
+<ul>
+<li>异常等级：可以视为一种特殊的属性，表示给定的节点或者边正在发生异常。可以用任意的异常检测方法来识别是否异常并在图中作标记。之后，异常区域提取器将使用它在系统图之外构建异常子图。</li>
+</ul>
+<h2
+id="异常区域提取模块anomalous-region-module">异常区域提取模块（Anomalous
+region module）</h2>
+<p>该模块能够对2.1中输出的系统图进行异常区域提取，该模块由两部分组成。</p>
+<ol type="1">
+<li>异常检测系统：检测并标记系统图中的异常节点</li>
+<li>异常区域提取器</li>
+</ol>
+<p>其中，1可以使用任何有效的异常检测技术，论文假设存在此模块，不关心这一块如何实现，因为论文专注于检测到的异常而非如何检测异常。</p>
+<p>论文基于异常发生时会影响其相关节点这样的直觉，用异常区域提取器对检测到并被标记的异常节点生成异常子图。考虑到计算资源有限以及出于可伸缩性目的，异常区域提取器仅对异常周边有限节点进行提取。这样做有一个明显的缺点是，可能根因节点不在该子图范围之内，但是，该提取器提取范围是可以根据需要设置。提取出的异常子图仍然包含节点、边以及各自的属性信息。异常区域中的节点、边和属性可以单独设置权重，以表示该异常区域中给定元素的重要性。例如，机器中cpu
+usage消耗过多产生的异常，cpu对应属性的权重可能会相应增加，后续图相似性模块会用到这些权重。</p>
+<p>提取到的异常区域会发送到相似性模块，和已经定位过的异常进行相似性匹配。</p>
+<p>下图是异常区域提取示意图：</p>
+<p><img src="https://images.bumpchicken.cn/img/20220512202638.png" width="60%"></p>
+<h4 id="异常模式库the-pattern-library-module">异常模式库（The pattern
+library module)</h4>
+<p>异常模式库是一系列经专家标注过的异常区域的集合，这些异常区域可以和系统中正在发生的异常情况进行匹配。如果新的异常区域与库中存在的异常区域图都无法匹配（相似度达不到阈值），则将该模式添加到库中。在系统设计之初，可以手动扩充这个库，使得系统拥有一组最常见的异常模式。随着系统运行，该库将越来越丰富，尽管这可能会增加搜索时间。用户能够访问到这个库中的内容（可视化的形式），浏览并进行如下操作：</p>
+<ol type="1">
+<li>权重调整：用户可以对异常区域中的节点、边的权重进行设置，对一些重要的节点设置更大的权重将有助于根因定位过程。</li>
+<li>根因标注：对异常区域图进行根因节点的标注，主要由专家对异常结构图进行分析并确定根因节点。</li>
+</ol>
+<p>论文尚未实现上述提到的可视化操作，更多地关注于图相似比较方法上。</p>
+<h2 id="图相似性度量模块">图相似性度量模块</h2>
+<p>图相似性度量模块依赖模糊匹配函数，该函数考虑了两个多属性加权图之间的相似度距离。该模块接收两个输入：由异常区域提取模块生成的异常区域和来自异常模式库标记过的异常区域图。输出由两个元素组成：相似性得分和节点从图A到图B的映射。前者从0到1，得分为1表示两个图是完全相同的，而0表示两个图完全不同。后者描述了来自第一个图的那些图元素与来自第二图的元素匹配以实现相似性得分。下图是输出的示意图：</p>
+<p><img src="https://images.bumpchicken.cn/img/20220512202727.png" width="60%"></p>
+<p>图相似性可以使用任何图匹配方法，在第四部分论文详细介绍了本文使用的方法。</p>
+<p>每当新的异常区域产生时，模块会尝试将其与异常模式库中的一个或多个图进行匹配。当两个图之间的相似度高于设定的阈值时，认为两个图存在匹配。如果没有任何匹配项，则将该新的异常区域添加到异常模式库中，等待专家进行根因节点标记。如果存在一个或多个，则可以将这些匹配的模式图以及可能的根因节点按相似度排名生成一个列表显示给用户。</p>
+<p>相似度阈值的设定需要在精确率和搜索时间之间进行权衡。降低阈值将导致产生多个可能的根因节点，需要进行更多次数的比较来提高准确性。论文认为将阈值设置在0.8到0.9之间会有比较好的精确率。论文指出，对图中的节点正确地设置权重能有效提升匹配的准确率。</p>
+<h2 id="图相似性度量计算引擎">图相似性度量计算引擎</h2>
+<p>图相似性度量是论文所提出方法中关键的一环，论文详细介绍了其实现。</p>
+<h3 id="问题定义">问题定义</h3>
+<p><strong>DEF1</strong>.一个图由一个5元组构成，用<span
+class="math inline">\(G\)</span>表示一个图结构</p>
+<p><span class="math display">\[G=(V, E, a t t, C, w)\]</span></p>
+<p>其中，<span class="math inline">\(V\)</span>是节点的集合，<span
+class="math inline">\(E \subseteq V \space \times \space
+V\)</span>是边的集合，<span
+class="math inline">\(att\)</span>是一个函数，<span
+class="math inline">\(attr(V \vee E) = A\)</span>，<span
+class="math inline">\(A\)</span>是由一系列<span class="math inline">\(a
+= \{ val, weight, c \subset C \}\)</span>这样的元素组成的列表，其中<span
+class="math inline">\(val\)</span>是具体值，<span
+class="math inline">\(weight\)</span>是该节点或边的权重，<span
+class="math inline">\(c\)</span>是上下文属性。<span
+class="math inline">\(C\)</span>表示图形上下文，用来结石图形中包含的属性，并提供一个用于比较其值的上下文，后面会提到。<span
+class="math inline">\(w\)</span>是一个函数，<span
+class="math inline">\(w(x)\)</span>用来生成图内节点、边或属性的权重。</p>
+<p><strong>DEF2</strong>.图相似性度量定义，给定两个图</p>
+<p><span class="math display">\[G_{1}=\left(V_{1}, E_{1}, a t t, C,
+w\right), G_{2}=\left(V_{2}, E_{2}, a t t, C, w\right)\]</span></p>
+<p>以及两个单射函数，<span class="math inline">\(m_{n}: V_{1}
+\rightarrow V_{2}\)</span>和<span class="math inline">\(m_{e} = E_{1}
+\rightarrow E_{2}\)</span>，前者返回<span
+class="math inline">\(G_{1}\)</span>中和<span
+class="math inline">\(G_{2}\)</span>匹配的节点，后者返回两个图相同的边，这里我们遇到一个优化问题：找到一个使得两个图之间相似性最大化的映射，公式如下：</p>
+<p><span class="math display">\[\begin{aligned}
+&amp;\frac{\sum_{v \in V_{1}}\left(w(v)+w\left(m_{n}(v)\right)\right)
+\cdot \operatorname{sim}\left(v, m_{n}(v)\right)+\sum_{e \in
+E_{1}}\left(w(e)+w\left(m_{e}(e)\right)\right) \cdot
+\operatorname{sim}\left(e, m_{e}(e)\right)}{\sum_{v \in V_{1}}
+w(v)+\sum_{v \in V_{2}} w(v)+\sum_{e \in E_{1}} w(e)+\sum_{e \in E_{2}}
+w(e)}
+\\
+&amp;\underset{m_{n}, m_{e}}{\arg \max }
+\end{aligned}\]</span></p>
+<p>其中，<span class="math inline">\(sim(x_{1},
+x_{2})\)</span>是一个能得到一个0到1之间的相似性度量函数。上面公式表示，相似性度量是通过
+<span class="math inline">\(m_{n}\)</span>和<span
+class="math inline">\(m_{e}\)</span>两个函数确定的最佳匹配点和边决定的，匹配点和边的权重将会影响相似性得分。最小化问题可以用任何优化手段求解，论文使用的是Hill
+climbing
+（爬山算法），使用该算法能够减少搜索时间但是是以找到局部最优而不是全局最优为代价的。</p>
+<p><span class="math inline">\(sim(v, m_{n}(v))\)</span>和<span
+class="math inline">\(sim(e,
+m_{e}(e))\)</span>后文会介绍其实现，下表列出了所有相关的定义：</p>
+<p><img src="https://images.bumpchicken.cn/img/20220512202838.png" width="60%" height="60%"></p>
+<h3 id="节点和边的相似性计算方法">节点和边的相似性计算方法</h3>
+<p>节点或边的相似性由如下公式给出：</p>
+<p><span class="math display">\[\frac{\sum_{a \in a t t(v) \cup a t
+t(u)}\left(w\left(a_{1}\right)+w\left(a_{2}\right)\right) \cdot
+\operatorname{sim}\left(a_{1}, a_{2}\right)}{\sum_{a \in a t t(v) \cup a
+t
+t(u)}\left(w\left(a_{1}\right)+w\left(a_{2}\right)\right)}\]</span></p>
+<p>其中，<span class="math inline">\(sim(a_{1},
+a_{2})\)</span>用来衡量两个元素间属性的相似性。和<strong>DEF 2</strong>
+中公式相似，这个公式表示，两个元素之间的相似性由他们之间共同属性的加权平均值确定。同样的，属性的权重会影响相似性计算结果。增加属性的权重意味着如果两个节点或两个边的属性值相似，则它们的相似性将进一步增加，下图是一个示例，对属性（如节点的形状）赋予更大的权重，则形状的相似度优先于结构相似度，可以看到右侧匹配的节点既没有两条边也没有连接到一个圆圈，但是仍将两个图视为匹配。</p>
+<p><img src="https://images.bumpchicken.cn/img/20220512203041.png" width="60%"></p>
+<p>举个例子，假如某个异常是由磁盘异常产生的，那么该异常模式中，关于磁盘相关的属性值的权重应该适当增加。</p>
+<h3 id="属性相似性计算">属性相似性计算</h3>
+<p>本节介绍<span
+class="math inline">\(sim(a_{1},a_{2})\)</span>​实现方式。进行属性比较时，上下文可以帮我们衡量不同属性间的相似性。上下文<span
+class="math inline">\(C\)</span>将用于不同的相似度计算中，如果属性没有有效的上下文，那么在相似度计算中将忽略该属性。论文考虑了三种上下文：</p>
+<ol type="1">
+<li>明确类别的上下文（Categorical
+Context）：具备该上下文的属性一般有明确的标签值，比较此类属性时，直接用精确的相等函数，如下所示，仅当两个属性值相等，相似度为1，否则为0。</li>
+</ol>
+<p><span class="math display">\[\operatorname{sim}\left(a_{1},
+a_{2}\right)=\left\{\begin{array}{ll}
+1 &amp; \text { if } a_{1}=a_{2} \\
+0 &amp; \text { otherwise }
+\end{array}\right.\]</span></p>
+<ol start="2" type="1">
+<li><p>数值类型的上下文(Numerical Context):
+具备该上下文的属性有特定的范围，上下文可以表示为<span
+class="math inline">\(c_{numerical} = \{min, max\}\)</span>,比如cpu
+usage 的范围应该设置为从0
+到100。当比较具备此类型上下文的属性时，用如下公式：</p>
+<p><span class="math display">\[\operatorname{sim}\left(a_{1},
+a_{2}\right)=1-\frac{\left|a_{1}-a_{2}\right|}{\max -m i
+n}\]</span></p></li>
+<li><p>本体上下文（Ontological Context):
+此类上下文一般表示为树结构，在该上下文中，每个节点表示层级结构中的一种概念。这种类型的上下文目的是使本质相同的两种属性（比如负载均衡和分布式数据库主数据库：它们的作用比较相似，都是将请求重定向到后端执行单元池）。此上下文中，论文使用
+Wu
+和Palmer相似性度量的一种变体：令c1和c2作为本体中的两种概念，C作为它们共同的最近的祖先，那么相似性按下式进行计算</p>
+<p><span class="math display">\[\operatorname{sim}(C 1, C 2)=\frac{2
+\cdot d(C)}{d(C 1)+d(C 2)}\]</span></p>
+<p>其中，<span
+class="math inline">\(d(x)\)</span>是从根节点遍历到节点x的节点数，要求树结构中必须包含<span
+class="math inline">\(x\)</span>，因此<span class="math inline">\(d(x)
+&gt;= 1\)</span>。</p></li>
+</ol>
+<h2 id="图结构生成">图结构生成</h2>
+<h3 id="节点添加">节点添加</h3>
+<p>首先添加构成图的节点，即系统中存在的元素（容器和主机）。由于需要提取容器级别和主机级别两种不同的指标，论文在每台机器上运行了两个容器：<a
+target="_blank" rel="noopener" href="https://github.com/prometheus/node%20exporter">node exporter</a>
+和<a
+target="_blank" rel="noopener" href="https://github.com/google/cadvisor">cadvisor</a>。前者会监控主机，后者监控容器。收集指标的后端使用了<a
+target="_blank" rel="noopener" href="https://github.com/prometheus/prometheus">Prometheus</a>，它是一个监控和报警系统。
+node
+export和cadvisor通过http请求将指标上报到prometheus，指标遵循多维时间序列数据模型进行存储，即每个指标都有一系列格式为(ts,
+id, value, labels)
+的元组，其中，ts是毫秒级别的时间戳，id指示指标属于哪个容器或主机，value是指标具体值，标签是一个可选的键值对，用来指示指标特定的维度。
+举例说明，可能有一个数据点，如<span class="math inline">\((ts =
+1518537794351, id = 10.136.1.9, value = 98.1, cpu = cpu3, mode =
+user)\)</span>，它表示
+节点为10.136.1.9的cpu3在用户模式下时间戳为1518537794351时，值为98.1。
+每个不同的id将作为一个节点添加到图中，并且其信息（label包含的键值对，如mode=user）会作为节点的属性。</p>
+<h3 id="边添加">边添加</h3>
+<p>添加了各个节点之后，可以通过边对它们进行连接，为此，需要监控它们的内部通信。论文通过使用Sysdig捕获容器或主机间的任何TCP通信。对于每个TCP请求，会有一个元组</p>
+<p><span class="math display">\[（ts，id，cip，sip，io dir,
+bytes）\]</span></p>
+<p>其中，ts是该请求发生的时间戳，id是发生通信的容器或主机，cip是客户端ip，sip是服务器ip，io
+dir是正则读取或写入的TCP套接字，字节是发送或读取的信息量。对一段时间内的通信进行监控，将该时间内的所有通信信息按（cip，sip）分组，构建起所有节点的边节点。下面是一个例子示意图：</p>
+<h2 id="参考资料">参考资料</h2>
+<p>1.Brandón Á, Solé M, Huélamo A, et al. Graph-based root cause
+analysis for service-oriented and microservice architectures[J]. Journal
+of Systems and Software, 2020, 159: 110432.</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%A0%B9%E5%9B%A0%E5%AE%9A%E4%BD%8D/" rel="tag"># 根因定位</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/05/25/IsolationTree/" rel="prev" title="孤立森林原理详解">
+      <i class="fa fa-chevron-left"></i> 孤立森林原理详解
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/12/08/PageRank/" rel="next" title="PageRank算法原理">
+      PageRank算法原理 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="gitalk-container"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="nav-number">1.</span> <span class="nav-text">整体架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E5%9B%BE%E7%94%9F%E6%88%90%E6%A8%A1%E5%9D%97system-graph-module"><span class="nav-number">2.</span> <span class="nav-text">系统图生成模块（System graph
+module)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%82%E5%B8%B8%E5%8C%BA%E5%9F%9F%E6%8F%90%E5%8F%96%E6%A8%A1%E5%9D%97anomalous-region-module"><span class="nav-number">3.</span> <span class="nav-text">异常区域提取模块（Anomalous
+region module）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BC%82%E5%B8%B8%E6%A8%A1%E5%BC%8F%E5%BA%93the-pattern-library-module"><span class="nav-number">3.0.1.</span> <span class="nav-text">异常模式库（The pattern
+library module)</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%BE%E7%9B%B8%E4%BC%BC%E6%80%A7%E5%BA%A6%E9%87%8F%E6%A8%A1%E5%9D%97"><span class="nav-number">4.</span> <span class="nav-text">图相似性度量模块</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%BE%E7%9B%B8%E4%BC%BC%E6%80%A7%E5%BA%A6%E9%87%8F%E8%AE%A1%E7%AE%97%E5%BC%95%E6%93%8E"><span class="nav-number">5.</span> <span class="nav-text">图相似性度量计算引擎</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E5%AE%9A%E4%B9%89"><span class="nav-number">5.1.</span> <span class="nav-text">问题定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8A%82%E7%82%B9%E5%92%8C%E8%BE%B9%E7%9A%84%E7%9B%B8%E4%BC%BC%E6%80%A7%E8%AE%A1%E7%AE%97%E6%96%B9%E6%B3%95"><span class="nav-number">5.2.</span> <span class="nav-text">节点和边的相似性计算方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B1%9E%E6%80%A7%E7%9B%B8%E4%BC%BC%E6%80%A7%E8%AE%A1%E7%AE%97"><span class="nav-number">5.3.</span> <span class="nav-text">属性相似性计算</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%BE%E7%BB%93%E6%9E%84%E7%94%9F%E6%88%90"><span class="nav-number">6.</span> <span class="nav-text">图结构生成</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8A%82%E7%82%B9%E6%B7%BB%E5%8A%A0"><span class="nav-number">6.1.</span> <span class="nav-text">节点添加</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BE%B9%E6%B7%BB%E5%8A%A0"><span class="nav-number">6.2.</span> <span class="nav-text">边添加</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">7.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">wjd</p>
+  <div class="site-description" itemprop="description">弱者的反击</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+  <div class="beian"><a href="https://beian.miit.gov.cn/" rel="noopener" target="_blank">沪ICP备2022012091号-1 </a>
+  </div>
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wjd</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+NexT.utils.loadComments(document.querySelector('#gitalk-container'), () => {
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID    : '7d18fb7cc60b381d58b2',
+      clientSecret: '779d68590ffb7283ddca9f654a481a6398509c73',
+      repo        : 'wjd92.github.io',
+      owner       : 'wjd92',
+      admin       : ['wjd92'],
+      id          : 'a2b1d0016a760d4239639aeae5939262',
+        language: 'zh-CN',
+      distractionFreeMode: true
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+});
+</script>
+
+</body>
+</html>
