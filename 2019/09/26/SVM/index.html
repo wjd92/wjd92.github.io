@@ -147,11 +147,6 @@
     <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
 
   </li>
-        <li class="menu-item menu-item-comment">
-
-    <a href="/comment/" rel="section"><i class="comment fa-fw"></i>comment</a>
-
-  </li>
       <li class="menu-item menu-item-search">
         <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
         </a>
@@ -778,6 +773,7 @@ target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/26514613">浅�
   if (typeof MathJax === 'undefined') {
     window.MathJax = {
       loader: {
+          load: ['[tex]/mhchem'],
         source: {
           '[tex]/amsCd': '[tex]/amscd',
           '[tex]/AMScd': '[tex]/amscd'
@@ -785,6 +781,7 @@ target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/26514613">浅�
       },
       tex: {
         inlineMath: {'[+]': [['$', '$']]},
+          packages: {'[+]': ['mhchem']},
         tags: 'ams'
       },
       options: {
