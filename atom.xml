@@ -6,7 +6,7 @@
   <link href="http://www.bumpchicken.cn/atom.xml" rel="self"/>
   
   <link href="http://www.bumpchicken.cn/"/>
-  <updated>2022-05-23T07:11:10.092Z</updated>
+  <updated>2022-05-11T09:37:53.447Z</updated>
   <id>http://www.bumpchicken.cn/</id>
   
   <author>
@@ -15,27 +15,6 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
-  
-  <entry>
-    <title></title>
-    <link href="http://www.bumpchicken.cn/2022/05/20/introduction/"/>
-    <id>http://www.bumpchicken.cn/2022/05/20/introduction/</id>
-    <published>2022-05-20T04:00:37.672Z</published>
-    <updated>2022-05-23T07:11:10.092Z</updated>
-    
-    <content type="html"><![CDATA[<p>自我介绍：</p><p>面试官你好，我叫王锦冬。本科毕业于中南大学，18年硕士毕业于华科后加入美团基础技术部，主要负责AIOps中异常检测、根因定位、告警收敛等方向的工作。在美团工作期间作为主要负责人参与Horae时序异常检测系统的开发、作为开发成员参与公司统一故障处理平台Radar、MCM变更管控平台以及天网智能监控系统的开发。其中，Horae、Radar以及MCM都是公司的公共服务。</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;p&gt;自我介绍：&lt;/p&gt;
-&lt;p&gt;面试官你好，我叫王锦冬。本科毕业于中南大学，18年硕士毕业于华科后加入美团基础技术部，主要负责AIOps中异常检测、根因定位、告警收敛等方向的工作。在美团工作期间作为主要负责人参与Horae时序异常检测系统的开发、作为开发成员参与公司统一故障处理平</summary>
-      
-    
-    
-    
-    
-  </entry>
   
   <entry>
     <title>贝叶斯优化原理及应用</title>
