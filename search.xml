@@ -796,7 +796,7 @@ class="math inline">\(dim\)</span>表示聚类空间的维度大小</p>
     <title>持续集成全景图</title>
     <url>/2022/11/16/CI/</url>
     <content><![CDATA[<p><img src="https://images.bumpchicken.cn/img/CI.png"></p>
-<p>应用构建和发布流程说明：</p>
+<p>应用构建和发布流程说明：<br><span id="more"></span></p>
 <ol>
 <li>用户向 Gitlab 提交代码，代码中必须包含 <code>Dockerfile</code></li>
 <li>将代码提交到远程仓库</li>
